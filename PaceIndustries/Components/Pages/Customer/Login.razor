@@ -1,0 +1,111 @@
+﻿@page "/customer/login"
+
+@inject NavigationManager NavigationManager
+
+<PageTitle>Sign In</PageTitle>
+
+<HelpPopover Open="@_popoverOpen" OpenChanged="@(value => _popoverOpen = value)" />
+
+<div class="d-flex justify-content-center align-items-center" style="height:100vh;">
+    <MudCard Style="width: 300px;">
+        <MudCardContent Class="pa-4">
+            <MudImage Src="Images/Logos/Logo.png" Style="width: 100%;" Class="rounded-lg" />
+
+            <MudText Typo="Typo.h5" Style="@($"color:{Colors.Red.Accent3};")" Align="Align.Center" Class="mb-4">Customer Portal</MudText>
+
+            <MudText Style="@($"color:{Colors.Red.Accent3};")" Align="Align.Center" Class="mb-4">@_errorMessage</MudText>
+
+            <EditForm Model="@_model" OnValidSubmit="OnValidSubmit" FormName="CustomerLoginForm">
+                <DataAnnotationsValidator />
+
+                <MudTextField Label="Username - Email" HelperText="Email of your account"
+                              @bind-Value="_model.UserName" For="@(() => _model.UserName)"
+                              FullWidth="true" Margin="Margin.Dense" />
+
+                <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                              @bind-Value="_model.Password" For="@(() => _model.Password)" InputType="InputType.Password"
+                              FullWidth="true" Margin="Margin.Dense" />
+
+                <div style="display: flex; justify-content: space-between; margin-top: 16px;">
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Style="@($"background-color:{Colors.Gray.Lighten3}; color:black;")">Sign In</MudButton>
+
+                    <MudButton OnClick="@(() => {_popoverOpen = true;})" Variant="Variant.Filled" Style="@($"background-color:{Colors.Gray.Lighten3}; color:black;")">Help</MudButton>
+                </div>
+            </EditForm>
+        </MudCardContent>
+    </MudCard>
+</div>
+
+
+@code {
+    private const string ErrorMessage = "Incorrect username or password \nand or incorrect account \nplease retry or use the help option";
+
+    [Inject] 
+    private AuthenticationStateProvider _authStateProvider { get; set; }
+
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
+
+    private LoginModel _model = new();
+
+    private string _errorMessage;
+
+    private bool _popoverOpen;
+
+    private async void OnValidSubmit()
+    {
+        var customerContact = _dbContext.Contacts.FirstOrDefault(c => c.Email.Equals(_model.UserName));
+
+        if (customerContact == null)
+        {
+            _errorMessage = ErrorMessage;
+            return;
+        }
+
+        var user = _dbContext.Customers.FirstOrDefault(s => s.CustomerId.Equals(customerContact.ParentKey));
+
+        if (user == null)
+        {
+            _errorMessage = ErrorMessage;
+            return;
+        }
+
+        var password = _dbContext.Pws.FirstOrDefault(p => p.Email.Equals(customerContact.Email));
+
+        if (password == null)
+        {
+            _errorMessage = ErrorMessage;
+            return;
+        }
+
+        //rework with hash
+        if (!password.PasswordHash.Equals(_model.Password))
+        {
+            _errorMessage = ErrorMessage;
+            return;
+        }
+
+        _errorMessage = String.Empty;
+
+        var result = await(_authStateProvider as CustomAuthenticationStateProvider).ChangeUser(_model.UserName, Guid.NewGuid().ToString(), "customer");
+
+        if (result.User.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/supplier");
+        }
+    }
+
+    private sealed class LoginModel
+    {
+        /// <summary>
+        /// Email
+        /// </summary>
+        [Required(ErrorMessage = "Username is required.")]
+        [EmailAddress(ErrorMessage = "The username must be a valid email address.")]
+        public string UserName { get; set; } = "john.doe@harley-davidson.com";
+
+        [Required(ErrorMessage = "Password is required.")]
+        [StringLength(20, MinimumLength = 6, ErrorMessage = "Password must be between 6 and 20 characters.")]
+        public string Password { get; set; } = "password1";
+    }
+}
