@@ -1,0 +1,17 @@
+﻿@page "/supplier-acknowledgement"
+
+<PageTitle>Supplier Acknowledgement</PageTitle>
+
+<MudCheckBox @bind-Value="_isAcknowledged" Label="I acknowledge I have read the Pace Supplier Quality Manual and agreements, etc."></MudCheckBox>
+
+@code {
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
+
+    private bool _isAcknowledged;
+
+    protected override void OnInitialized()
+    {
+        
+    }
+}

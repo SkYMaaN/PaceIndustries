@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using PaceIndustries.Components;
 using PaceIndustries.Data;
+using PaceIndustries.Models;
 using PaceIndustries.Services;
 
 namespace PaceIndustries
@@ -20,7 +21,8 @@ namespace PaceIndustries
 
             builder.Services.AddCascadingAuthenticationState();
 
-            builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+            builder.Services.AddScoped<CustomAuthenticationStateProvider>();
+            builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthenticationStateProvider>());
 
             builder.Configuration.AddUserSecrets<Program>();
 
@@ -30,6 +32,8 @@ namespace PaceIndustries
             {
                 options.UseSqlServer(connectionString);
             });
+
+            builder.Services.AddSingleton<UserInfo>();
 
             var app = builder.Build();
 

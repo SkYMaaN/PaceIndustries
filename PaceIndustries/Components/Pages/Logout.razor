@@ -3,10 +3,11 @@
 <PageTitle>Sign out</PageTitle>
 
 @code {
-    [Inject] private AuthenticationStateProvider _authStateProvider { get; set; }
+    [Inject] 
+    private CustomAuthenticationStateProvider _authStateProvider { get; set; }
 
     protected override void OnInitialized()
     {
-        (_authStateProvider as CustomAuthenticationStateProvider).Logout();
+        _authStateProvider.Logout();
     }
 }

@@ -6,9 +6,57 @@
 <MudSnackbarProvider />
 
 <MudLayout>
-    @Body
+    <MudAppBar Elevation="1" Style="background-color: white;">
+        <MudGrid>
+            <MudItem xs="4">
+                <MudImage Src="Images/Logos/Logo.png" Height="60" />
+            </MudItem>
+            <MudItem xs="4" Align="center">
+                <MudText Style="color: black;" Typo="Typo.h4" Class="mb-4">@_title</MudText>
+            </MudItem>
+            <MudItem xs="4" Align="right">
+                <MudIconButton Href="/account/logout" Icon="@Icons.Material.Outlined.Logout" />
+            </MudItem>
+        </MudGrid>
+    </MudAppBar>
+
+    <MudDrawer Open="true" Width="350px;" ClipMode="DrawerClipMode.Always" Elevation="2" Style="background-color: lightgray;">
+        <MudText Style="font-size: large; font-weight: bolder; margin-top: 10px; margin-bottom: 10px; margin-left: 28px;">Hello, @_userInfo.UserName</MudText>
+
+        <AuthorizeView Roles="supplier">
+            <Authorized>
+                <MudNavMenu Bordered="true">
+                    <MudNavLink Href="/current-orders"><div onclick="@(() => ChangeTitle("Current Orders"))">Current Orders</div></MudNavLink>
+                    <MudNavLink Href="/supplier-acknowledgement"><div onclick="@(() => ChangeTitle("Supplier Acknowledgement"))">Supplier Acknowledgement</div></MudNavLink>
+                    <MudNavLink Href="/supplier-certifications"><div onclick="@(() => ChangeTitle("Supplier Certifications"))">Supplier Certifications</div></MudNavLink>
+                    <MudNavLink Href="/supplier-assessment"><div onclick="@(() => ChangeTitle("Supplier Assessment"))">Supplier Assessment</div></MudNavLink>
+                    <MudNavLink Href="/supplier-kpis"><div onclick="@(() => ChangeTitle("Supplier KPIs"))">Supplier KPIs</div></MudNavLink>
+                </MudNavMenu>
+            </Authorized>
+        </AuthorizeView>
+        <AuthorizeView Roles="customer">
+            <Authorized>
+                <MudNavMenu Bordered="true">
+                    <MudNavLink Href="/customer-sales-orders"><div onclick="@(() => ChangeTitle("Current Sales Orders"))">Current Sales Orders</div></MudNavLink>
+                    <MudNavLink Href="/customer-rfqs"><div onclick="@(() => ChangeTitle("Current RFQ's"))">Current RFQ's</div></MudNavLink>
+                    <MudNavLink Href="/customer-shipments"><div onclick="@(() => ChangeTitle("Customer Shipments"))">Customer Shipments</div></MudNavLink>
+                </MudNavMenu>
+            </Authorized>
+        </AuthorizeView>
+    </MudDrawer>
+
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+            @Body
+        </MudContainer>
+    </MudMainContent>
 </MudLayout>
 
 @code {
+    [Inject]
+    private UserInfo _userInfo { get; set; }
 
+    private string _title;
+
+    private void ChangeTitle(string title) => _title = title;
 }
