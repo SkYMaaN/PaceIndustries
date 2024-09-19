@@ -14,28 +14,21 @@ public partial class ApplicationDbContext : DbContext
     {
     }
 
-    #region DbSets
     public virtual DbSet<Apopen> Apopens { get; set; }
-
-    public virtual DbSet<CompanyAddress> CompanyAddresses { get; set; }
 
     public virtual DbSet<Contact> Contacts { get; set; }
 
     public virtual DbSet<Customer> Customers { get; set; }
 
-    public virtual DbSet<Employee> Employees { get; set; }
-
     public virtual DbSet<ForecastDtl> ForecastDtls { get; set; }
-
-    public virtual DbSet<Matltype> Matltypes { get; set; }
-
-    public virtual DbSet<Operation> Operations { get; set; }
 
     public virtual DbSet<OrderDate> OrderDates { get; set; }
 
     public virtual DbSet<OrderHeader> OrderHeaders { get; set; }
 
     public virtual DbSet<OrderItem> OrderItems { get; set; }
+
+    public virtual DbSet<PSupplierAck> PSupplierAcks { get; set; }
 
     public virtual DbSet<Period> Periods { get; set; }
 
@@ -49,8 +42,6 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<Product> Products { get; set; }
 
-    public virtual DbSet<ProductCost> ProductCosts { get; set; }
-
     public virtual DbSet<Pw> Pws { get; set; }
 
     public virtual DbSet<SalesHistoryDtl> SalesHistoryDtls { get; set; }
@@ -62,8 +53,6 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<SupplierX> SupplierXes { get; set; }
 
     public virtual DbSet<SupplierXdailyParent> SupplierXdailyParents { get; set; }
-
-    #endregion
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -88,13 +77,6 @@ public partial class ApplicationDbContext : DbContext
                 .HasForeignKey(d => new { d.SupplierId, d.CompanyId })
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("con_fk_apopen_supplier");
-        });
-
-        modelBuilder.Entity<CompanyAddress>(entity =>
-        {
-            entity.HasKey(e => e.OdyUniqueId).HasName("PK__CompanyA__CB1247690C5E5B95");
-
-            entity.Property(e => e.OdyUniqueId).ValueGeneratedNever();
         });
 
         modelBuilder.Entity<Contact>(entity =>
@@ -131,13 +113,6 @@ public partial class ApplicationDbContext : DbContext
                 .HasConstraintName("FK__Customer__Compan__4A457BA9");
         });
 
-        modelBuilder.Entity<Employee>(entity =>
-        {
-            entity.HasKey(e => e.UniqueId).HasName("PK__Employee__A2A2A54ACBA5EB04");
-
-            entity.Property(e => e.UniqueId).ValueGeneratedNever();
-        });
-
         modelBuilder.Entity<ForecastDtl>(entity =>
         {
             entity.HasKey(e => e.OdyUniqueId).HasName("PK__Forecast__CB1247691F8EF91B");
@@ -163,20 +138,6 @@ public partial class ApplicationDbContext : DbContext
                 .HasForeignKey(d => new { d.ProductId, d.CompanyId })
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("con_fk_forecastdtl_product");
-        });
-
-        modelBuilder.Entity<Matltype>(entity =>
-        {
-            entity.HasKey(e => e.UniqueId).HasName("PK__Matltype__A2A2A54A469FCDB4");
-
-            entity.Property(e => e.UniqueId).ValueGeneratedNever();
-        });
-
-        modelBuilder.Entity<Operation>(entity =>
-        {
-            entity.HasKey(e => e.UniqueId).HasName("PK__Operatio__A2A2A54A110F6CCB");
-
-            entity.Property(e => e.UniqueId).ValueGeneratedNever();
         });
 
         modelBuilder.Entity<OrderDate>(entity =>
@@ -264,6 +225,11 @@ public partial class ApplicationDbContext : DbContext
                 .HasForeignKey(d => new { d.ProductId, d.CompanyId })
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("con_fk_orderitem_product");
+        });
+
+        modelBuilder.Entity<PSupplierAck>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__pSupplie__3214EC0795CA79E0");
         });
 
         modelBuilder.Entity<Period>(entity =>
@@ -381,13 +347,6 @@ public partial class ApplicationDbContext : DbContext
                 .HasForeignKey(d => new { d.CustomerId, d.CompanyId })
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("con_fk_product_customer");
-        });
-
-        modelBuilder.Entity<ProductCost>(entity =>
-        {
-            entity.HasKey(e => e.UniqueId).HasName("PK__ProductC__A2A2A54AC8D9A1AE");
-
-            entity.Property(e => e.UniqueId).ValueGeneratedNever();
         });
 
         modelBuilder.Entity<Pw>(entity =>

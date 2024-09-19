@@ -2,16 +2,150 @@
 
 <PageTitle>Supplier Acknowledgement</PageTitle>
 
-<MudCheckBox @bind-Value="_isAcknowledged" Label="I acknowledge I have read the Pace Supplier Quality Manual and agreements, etc."></MudCheckBox>
+<MudCard>
+    <MudCardContent>
+        @if (_supplierAck != null)
+        {
+            <MudText Typo="Typo.h6">Last Updated:</MudText>
+
+            <MudText Typo="Typo.body2">@_supplierAck?.UpdateTimeStamp</MudText>
+        }
+
+        <MudDivider Class="my-2" />
+
+        <MudText Typo="Typo.h5" GutterBottom="true"><b>Contact Details</b></MudText>
+
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.subtitle2"><b>ID:</b></MudText>
+                <MudText Typo="Typo.body1">@_contact?.Id</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.subtitle2"><b>Parent Company ID:</b></MudText>
+                <MudText Typo="Typo.body1">@_contact?.ParentCompanyId</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.subtitle2"><b>Parent Key:</b></MudText>
+                <MudText Typo="Typo.body1">@_contact?.ParentKey</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.subtitle2"><b>Table Name:</b></MudText>
+                <MudText Typo="Typo.body1">@_contact?.TableName</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.subtitle2"><b>Contact Priority:</b></MudText>
+                <MudText Typo="Typo.body1">@_contact?.ContactPrty</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.subtitle2"><b>Contact Type:</b></MudText>
+                <MudText Typo="Typo.body1">@_contact?.ContactType</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.subtitle2"><b>First Name:</b></MudText>
+                <MudText Typo="Typo.body1">@_contact?.FirstName</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.subtitle2"><b>Last Name:</b></MudText>
+                <MudText Typo="Typo.body1">@_contact?.LastName</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.subtitle2"><b>Email:</b></MudText>
+                <MudText Typo="Typo.body1">@_contact?.Email</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.subtitle2"><b>Active:</b></MudText>
+                <MudText Typo="Typo.body1">@_contact?.Active</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.subtitle2"><b>Ody Unique ID:</b></MudText>
+                <MudText Typo="Typo.body1">@_contact?.OdyUniqueId</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.subtitle2"><b>Update Timestamp:</b></MudText>
+                <MudText Typo="Typo.body1">@_contact?.UpdateTimeStamp</MudText>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+
+    <MudCardActions Class="justify-start" Style="padding: 16px; background-color: #f9f9f9;">
+        <MudCheckBox @bind-Value="_isAcknowledged" Label=@Agreement />
+
+        <MudSpacer />
+
+        <MudButton OnClick="UpdateAck" Variant="Variant.Filled" Size="Size.Medium" Color="Color.Secondary">Update Agreement</MudButton>
+    </MudCardActions>
+</MudCard>
+
 
 @code {
+    private const string Agreement = "I acknowledge I have read the Pace Supplier Quality Manual and agreements, etc.";
+
     [Inject]
     private ApplicationDbContext _dbContext { get; set; }
+
+    [Inject]
+    private UserInfo _userInfo { get; set; }
+
+    private PSupplierAck? _supplierAck;
+
+    private Contact? _contact;
 
     private bool _isAcknowledged;
 
     protected override void OnInitialized()
     {
-        
+        _supplierAck = _dbContext.PSupplierAcks.AsNoTracking().FirstOrDefault(s => s.ParentCompanyId.Equals(_userInfo.ParentCompanyId));
+
+        _contact = _dbContext.Contacts.FirstOrDefault(c => c.ParentCompanyId.Equals(_userInfo.ParentCompanyId));
+
+        if(_supplierAck != null && _supplierAck.Ack.Equals("1"))
+        {
+            _isAcknowledged = true;
+        }
+    }
+
+    private void UpdateAck()
+    {
+        //create
+        if(_supplierAck == null && _isAcknowledged)
+        {
+            var supplierAck = new PSupplierAck()
+            {
+                ParentKey = _contact?.ParentKey,
+                ParentCompanyId = _contact?.ParentCompanyId,
+                Email = _contact?.Email,
+                Ack = "1",
+                UpdateTimeStamp = DateTime.Now,
+            };
+
+            _dbContext.PSupplierAcks.Add(supplierAck);
+            int result = _dbContext.SaveChanges();
+
+            if(result > 0)
+            {
+                _supplierAck = _dbContext.PSupplierAcks.AsNoTracking().FirstOrDefault(s => s.ParentCompanyId.Equals(_userInfo.ParentCompanyId));
+            }
+        }
+
+        //update
+        if(_supplierAck != null)
+        {
+            _supplierAck = _dbContext.PSupplierAcks.FirstOrDefault(s => s.ParentCompanyId.Equals(_userInfo.ParentCompanyId));
+            _supplierAck.Ack = _isAcknowledged ? "1" : "0";
+            _supplierAck.UpdateTimeStamp = DateTime.Now;
+
+            _dbContext.SaveChanges();
+        }
     }
 }
