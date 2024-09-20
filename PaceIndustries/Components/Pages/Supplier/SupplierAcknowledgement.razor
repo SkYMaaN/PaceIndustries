@@ -95,7 +95,7 @@
     private ApplicationDbContext _dbContext { get; set; }
 
     [Inject]
-    private UserInfo _userInfo { get; set; }
+    private CachedUserData _cachedUserData { get; set; }
 
     private PSupplierAck? _supplierAck;
 
@@ -105,9 +105,9 @@
 
     protected override void OnInitialized()
     {
-        _supplierAck = _dbContext.PSupplierAcks.AsNoTracking().FirstOrDefault(s => s.ParentCompanyId.Equals(_userInfo.ParentCompanyId));
+        _supplierAck = _dbContext.PSupplierAcks.AsNoTracking().FirstOrDefault(s => s.ParentCompanyId.Equals(_cachedUserData.ParentCompanyId));
 
-        _contact = _dbContext.Contacts.FirstOrDefault(c => c.ParentCompanyId.Equals(_userInfo.ParentCompanyId));
+        _contact = _dbContext.Contacts.FirstOrDefault(c => c.ParentCompanyId.Equals(_cachedUserData.ParentCompanyId));
 
         if(_supplierAck != null && _supplierAck.Ack.Equals("1"))
         {
@@ -130,18 +130,17 @@
             };
 
             _dbContext.PSupplierAcks.Add(supplierAck);
-            int result = _dbContext.SaveChanges();
 
-            if(result > 0)
+            if (_dbContext.SaveChanges() > 0)
             {
-                _supplierAck = _dbContext.PSupplierAcks.AsNoTracking().FirstOrDefault(s => s.ParentCompanyId.Equals(_userInfo.ParentCompanyId));
+                _supplierAck = _dbContext.PSupplierAcks.AsNoTracking().FirstOrDefault(s => s.ParentCompanyId.Equals(_cachedUserData.ParentCompanyId));
             }
         }
 
         //update
         if(_supplierAck != null)
         {
-            _supplierAck = _dbContext.PSupplierAcks.FirstOrDefault(s => s.ParentCompanyId.Equals(_userInfo.ParentCompanyId));
+            _supplierAck = _dbContext.PSupplierAcks.FirstOrDefault(s => s.ParentCompanyId.Equals(_cachedUserData.ParentCompanyId));
             _supplierAck.Ack = _isAcknowledged ? "1" : "0";
             _supplierAck.UpdateTimeStamp = DateTime.Now;
 

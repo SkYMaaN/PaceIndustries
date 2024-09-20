@@ -89,19 +89,23 @@
     private ApplicationDbContext _dbContext { get; set; }
 
     [Inject]
-    private UserInfo _userInfo { get; set; }
+    private CachedUserData _cachedUserData { get; set; }
 
     private List<PurchaseOrderDetails> _orders = new();
 
     protected override void OnInitialized()
     {
-        _orders = GetPurchaseOrderDetails(_userInfo.ParentKeys, _userInfo.ParentCompanyId);
+        _orders = GetPurchaseOrderDetails();
     }
 
-    private List<PurchaseOrderDetails> GetPurchaseOrderDetails(List<string> parentKeys, string companyId)
+    private List<PurchaseOrderDetails> GetPurchaseOrderDetails()
     {
+        var supplierIds = _cachedUserData.Contacts.Select(c => c.ParentKey).ToList();
+
+        var companyIds = _cachedUserData.Contacts.Select(c => c.ParentCompanyId).ToList();
+
         var results = _dbContext.Poheaders.AsNoTracking()
-            .Where(ph => parentKeys.Contains(ph.SupplierId) && ph.CompanyId.Equals(companyId) && !ph.Closed && ph.PoDate > DateTime.Now.AddDays(-90))
+            .Where(ph => (supplierIds.Contains(ph.SupplierId) && companyIds.Contains(ph.CompanyId)) && !ph.Closed && ph.PoDate > DateTime.Now.AddDays(-90))
             .Select(ph => new PurchaseOrderDetails()
                 {
                     Ponumber = ph.Ponumber,

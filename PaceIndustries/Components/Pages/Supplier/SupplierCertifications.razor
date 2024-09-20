@@ -2,6 +2,139 @@
 
 <PageTitle>Supplier Certifications</PageTitle>
 
-@code {
+<MudPaper Width="100%" Elevation="3" Class="pa-4">
+    <MudStack Direction="Column" Spacing="2">
+        <MudText Typo="Typo.h5">Upload Certificate</MudText>
+        <MudText Typo="Typo.body1">Please upload PDF or PNG files.</MudText>
+        <MudFileUpload T="IBrowserFile" FilesChanged="UploadFilesAsync" Accept=".pdf, .png">
+            <ActivatorContent>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">Upload Certificate</MudButton>
 
+                <MudText Color="Color.Error">@_errorMessage</MudText>
+            </ActivatorContent>
+        </MudFileUpload>
+
+        @if (_certificates != null && _certificates.Any())
+        {
+            <MudText Typo="@Typo.h6">@_certificates.Count() File@(_certificates.Count() == 1 ? String.Empty : "s"):</MudText>
+            <MudList T="string">
+                @foreach (var certificate in _certificates)
+                {
+                    <MudListItem Icon="@Icons.Material.Filled.AttachFile">
+                        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                            <span style="margin-right: auto;">
+                                @certificate.FileName <code>@certificate.FilePath</code>
+                            </span>
+                            <MudIconButton OnClick="@(() => DeleteCertificate(certificate.Id))" Icon="@Icons.Material.Filled.DeleteOutline" />
+                        </div>
+                    </MudListItem>
+                }
+            </MudList>
+        }
+    </MudStack>
+</MudPaper>
+
+@code {
+    private const string SavePath = "C:\\SupplierUploadFile";
+
+    private const long MaxFileSize = 5 * 1024 * 1024;
+
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
+
+    [Inject]
+    private CachedUserData _cachedUserData { get; set; }
+
+    private List<PSupplierUploadFile> _certificates;
+
+    private IBrowserFile _file;
+
+    private string _errorMessage;
+
+    protected override void OnInitialized()
+    {
+        _certificates = LoadCertificates();
+
+        Directory.CreateDirectory(SavePath);
+    }
+
+    private async Task UploadFilesAsync(IBrowserFile file)
+    {
+        _errorMessage = String.Empty;
+        if(file == null)
+        {
+            return;
+        }
+
+        if (file.Size > MaxFileSize)
+        {
+            _errorMessage = "The file exceeds the maximum allowed size of 5 megabytes.";
+            return;
+        }
+
+        string newFileName = $"{_cachedUserData.ParentCompanyId}_{file.Name}";
+        string filePath = Path.Combine(SavePath, newFileName);
+
+        var certificate = new PSupplierUploadFile()
+            {
+                Email = _cachedUserData.Email,
+                ParentKey = _cachedUserData.ParentKey,
+                ParentCompanyId = _cachedUserData.ParentCompanyId,
+                FileName = newFileName,
+                FilePath = filePath,
+                CreatedAt = DateTime.Now,
+            };
+
+        try
+        {
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.OpenReadStream(maxAllowedSize: MaxFileSize).CopyToAsync(stream);
+            }
+
+            _dbContext.PSupplierUploadFiles.Add(certificate);
+
+            if(_dbContext.SaveChanges() > 0)
+            {
+                _certificates = LoadCertificates();
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred while saving the file.";
+        }
+    }
+
+    private void DeleteCertificate(int certificateId)
+    {
+        _errorMessage = String.Empty;
+
+        var certificate = _dbContext.PSupplierUploadFiles.FirstOrDefault(c => c.Id.Equals(certificateId));
+
+        if(certificate == null)
+        {
+            _errorMessage = "Certificate not exist.";
+            return;
+        }
+
+        _dbContext.PSupplierUploadFiles.Remove(certificate);
+
+        if (_dbContext.SaveChanges() > 0)
+        {
+            _certificates = LoadCertificates();
+        }
+    }
+
+    private List<PSupplierUploadFile> LoadCertificates()
+    {
+        _errorMessage = String.Empty;
+
+        var supplierIds = _cachedUserData.Contacts.Select(c => c.ParentKey).ToList();
+
+        var companyIds = _cachedUserData.Contacts.Select(c => c.ParentCompanyId).ToList();
+
+        var certificates = _dbContext.PSupplierUploadFiles.AsNoTracking().Where(f => (supplierIds.Contains(f.ParentKey) && companyIds.Contains(f.ParentCompanyId))).ToList();
+
+        return certificates;
+    }
 }

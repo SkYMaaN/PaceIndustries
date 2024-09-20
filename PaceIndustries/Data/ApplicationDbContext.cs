@@ -30,6 +30,8 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<PSupplierAck> PSupplierAcks { get; set; }
 
+    public virtual DbSet<PSupplierUploadFile> PSupplierUploadFiles { get; set; }
+
     public virtual DbSet<Period> Periods { get; set; }
 
     public virtual DbSet<Plant> Plants { get; set; }
@@ -230,6 +232,36 @@ public partial class ApplicationDbContext : DbContext
         modelBuilder.Entity<PSupplierAck>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__pSupplie__3214EC0795CA79E0");
+        });
+
+        modelBuilder.Entity<PSupplierUploadFile>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__pSupplie__3213E83FB185A255");
+
+            entity.ToTable("pSupplierUploadFile");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.Email)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.FileName)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("file_name");
+            entity.Property(e => e.FilePath)
+                .HasMaxLength(1000)
+                .IsUnicode(false)
+                .HasColumnName("file_path");
+            entity.Property(e => e.ParentCompanyId)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.ParentKey)
+                .HasMaxLength(100)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<Period>(entity =>

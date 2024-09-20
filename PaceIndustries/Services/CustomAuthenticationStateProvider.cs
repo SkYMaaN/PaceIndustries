@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
+using PaceIndustries.Data.Entities;
 using PaceIndustries.Models;
 using System.Security.Claims;
 
@@ -6,13 +7,13 @@ namespace PaceIndustries.Services
 {
     public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     {
-        private readonly UserInfo _userInfo;
+        private readonly CachedUserData _cachedUserData;
 
         private ClaimsPrincipal CurrentUser { get; set; }
-        public CustomAuthenticationStateProvider(UserInfo userInfo)
+        public CustomAuthenticationStateProvider(CachedUserData cachedUserData)
         {
             this.CurrentUser = this.GetAnonymous();
-            this._userInfo = userInfo;
+            this._cachedUserData = cachedUserData;
         }
 
         private ClaimsPrincipal GetAnonymous()
@@ -33,17 +34,17 @@ namespace PaceIndustries.Services
             return task;
         }
 
-        public Task<AuthenticationState> ChangeUser(string userId, string companyId, string parentCompanyId, List<string> parentKeys, string username, string email, string role)
+        public Task<AuthenticationState> ChangeUser(string parentKey, string parentCompanyId, List<Contact> userContacts, string username, string email, string role)
         {
-            _userInfo.UserId = userId;
-            _userInfo.CompanyId = companyId;
-            _userInfo.ParentCompanyId = parentCompanyId;
-            _userInfo.ParentKeys = parentKeys;
-            _userInfo.UserName = username;
-            _userInfo.Email = email;
-            _userInfo.Role = role;
+            _cachedUserData.ParentKey = parentKey;
+            _cachedUserData.ParentCompanyId = parentCompanyId;
+            _cachedUserData.Contacts.Clear();
+            _cachedUserData.Contacts.AddRange(userContacts);
+            _cachedUserData.UserName = username;
+            _cachedUserData.Email = email;
+            _cachedUserData.Role = role;
 
-            this.CurrentUser = this.GetUser(userId, username, email, role);
+            this.CurrentUser = this.GetUser(parentKey, username, email, role);
             var task = this.GetAuthenticationStateAsync();
             this.NotifyAuthenticationStateChanged(task);
             return task;
@@ -51,6 +52,13 @@ namespace PaceIndustries.Services
 
         public Task<AuthenticationState> Logout()
         {
+            _cachedUserData.ParentKey = String.Empty;
+            _cachedUserData.ParentCompanyId = String.Empty;
+            _cachedUserData.Contacts.Clear();
+            _cachedUserData.UserName = String.Empty;
+            _cachedUserData.Email = String.Empty;
+            _cachedUserData.Role = String.Empty;
+
             this.CurrentUser = this.GetAnonymous();
             var task = this.GetAuthenticationStateAsync();
             this.NotifyAuthenticationStateChanged(task);

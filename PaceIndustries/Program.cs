@@ -33,7 +33,7 @@ namespace PaceIndustries
                 options.UseSqlServer(connectionString);
             });
 
-            builder.Services.AddSingleton<UserInfo>();
+            builder.Services.AddSingleton<CachedUserData>();
 
             var app = builder.Build();
 

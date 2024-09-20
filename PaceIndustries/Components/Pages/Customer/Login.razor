@@ -57,9 +57,9 @@
 
     private async void OnValidSubmit()
     {
-        var customerContacts = _dbContext.Contacts.AsNoTracking().Where(c => c.Email.Equals(_model.Email) && c.Active);
+        var customerContacts = _dbContext.Contacts.AsNoTracking().Where(c => c.Email.Equals(_model.Email) && c.Active).ToList();
 
-        if (customerContacts == null || !customerContacts.Any())
+        if (customerContacts == null || customerContacts.Any())
         {
             _errorMessage = ErrorMessage;
             return;
@@ -92,9 +92,7 @@
 
         string userName = $"{customerContact.FirstName} {customerContact.LastName}";
 
-        var parentKeys = customerContacts.Select(c => c.ParentKey).ToList();
-
-        var result = await _authStateProvider.ChangeUser(user.CustomerId, user.CompanyId, customerContact.ParentCompanyId, parentKeys, userName, customerContact.Email, "customer");
+        var result = await _authStateProvider.ChangeUser(customerContact.ParentKey, customerContact.ParentCompanyId, customerContacts, userName, customerContact.Email, "customer");
 
         if (result.User.Identity.IsAuthenticated)
         {
