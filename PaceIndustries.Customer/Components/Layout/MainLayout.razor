@@ -1,0 +1,68 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Style="background-color: white;">
+        <MudGrid>
+            <MudItem xs="4">
+                <MudImage Src="Images/Logos/Logo.png" Height="60" />
+            </MudItem>
+            <MudItem xs="4" Align="center">
+                <MudText Style="color: black;" Typo="Typo.h4" Class="mb-4">@_title</MudText>
+            </MudItem>
+            <MudItem xs="4" Align="right">
+                <MudIconButton Href="/logout" Icon="@Icons.Material.Outlined.Logout" />
+            </MudItem>
+        </MudGrid>
+    </MudAppBar>
+
+    <MudDrawer Open="true" Width="350px;" ClipMode="DrawerClipMode.Always" Elevation="2" Style="background-color: lightgray;">
+        <MudText Style="font-size: large; font-weight: bolder; margin-top: 10px; margin-bottom: 10px; margin-left: 28px;">Hello, @_cachedUserData.UserName</MudText>
+
+        <AuthorizeView Roles="customer">
+            <Authorized>
+                <MudNavMenu Bordered="true">
+                    <MudNavLink Href="/customer-sales-orders"><div onclick="@(() => ChangeTitle("Current Sales Orders"))">Current Sales Orders</div></MudNavLink>
+                    <MudNavLink Href="/customer-rfqs"><div onclick="@(() => ChangeTitle("Current RFQ's"))">Current RFQ's</div></MudNavLink>
+                    <MudNavLink Href="/customer-shipments"><div onclick="@(() => ChangeTitle("Customer Shipments"))">Customer Shipments</div></MudNavLink>
+                </MudNavMenu>
+            </Authorized>
+        </AuthorizeView>
+    </MudDrawer>
+
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> _authenticationStateTask { get; set; }
+
+    [Inject]
+    public NavigationManager _navigationManager { get; set; }
+
+    [Inject]
+    private CachedUserData _cachedUserData { get; set; }
+
+    private string _title;
+
+    private void ChangeTitle(string title) => _title = title;
+
+    //redirect to login on page refresh
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await _authenticationStateTask;
+
+        if (!authenticationState.User.Identity.IsAuthenticated)
+        {
+            _navigationManager.NavigateTo("/login");
+        }
+    }
+}

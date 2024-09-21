@@ -1,0 +1,18 @@
+﻿@page "/logout"
+
+<PageTitle>Sign out</PageTitle>
+
+@code {
+    [Inject] 
+    private CustomAuthenticationStateProvider _authStateProvider { get; set; }
+
+    [Inject]
+    public NavigationManager _navigationManager { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _authStateProvider.Logout();
+
+        _navigationManager.NavigateTo("/login");
+    }
+}
