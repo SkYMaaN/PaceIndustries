@@ -52,12 +52,12 @@ namespace PaceIndustries.Customer.Services
 
         public Task<AuthenticationState> Logout()
         {
-            _cachedUserData.ParentKey = string.Empty;
-            _cachedUserData.ParentCompanyId = string.Empty;
+            _cachedUserData.ParentKey = String.Empty;
+            _cachedUserData.ParentCompanyId = String.Empty;
             _cachedUserData.Contacts.Clear();
-            _cachedUserData.UserName = string.Empty;
-            _cachedUserData.Email = string.Empty;
-            _cachedUserData.Role = string.Empty;
+            _cachedUserData.UserName = String.Empty;
+            _cachedUserData.Email = String.Empty;
+            _cachedUserData.Role = String.Empty;
 
             CurrentUser = GetAnonymous();
             var task = GetAuthenticationStateAsync();

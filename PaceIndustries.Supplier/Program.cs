@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
@@ -34,6 +35,13 @@ namespace PaceIndustries.Supplier
             });
 
             builder.Services.AddSingleton<CachedUserData>();
+
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/login";
+                    options.AccessDeniedPath = "/login";
+                });
 
             var app = builder.Build();
 

@@ -1,4 +1,11 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.EntityFrameworkCore;
+using MudBlazor.Services;
 using PaceIndustries.Customer.Components;
+using PaceIndustries.Customer.Data;
+using PaceIndustries.Customer.Models;
+using PaceIndustries.Customer.Services;
 
 namespace PaceIndustries.Customer
 {
@@ -11,6 +18,31 @@ namespace PaceIndustries.Customer
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+
+            builder.Services.AddMudServices();
+
+            builder.Services.AddCascadingAuthenticationState();
+
+            builder.Services.AddScoped<CustomAuthenticationStateProvider>();
+            builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthenticationStateProvider>());
+
+            builder.Configuration.AddUserSecrets<Program>();
+
+            string connectionString = builder.Configuration["ConnectionString"];
+
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseSqlServer(connectionString);
+            });
+
+            builder.Services.AddSingleton<CachedUserData>();
+
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/login";
+                    options.AccessDeniedPath = "/login";
+                });
 
             var app = builder.Build();
 

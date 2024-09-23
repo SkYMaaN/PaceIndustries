@@ -1,0 +1,71 @@
+﻿@page "/current-sales-orders"
+
+@attribute [Authorize]
+
+<PageTitle>Current Sale Orders</PageTitle>
+
+<MudDataGrid Items="@_orders" Height="88vh" ReadOnly="true" EditMode="@DataGridEditMode.Cell" Groupable="true" Hover="true" Bordered="true" Striped="true" Dense="true">
+    <Columns>
+        <PropertyColumn Property="x => x.CompanyId" Title="Company ID" />
+        <PropertyColumn Property="x => x.ProductId" Title="Product ID" Grouping>
+            <GroupTemplate>
+                <span style="font-weight:bold">Product Info [@context.Grouping.Count()] : </span> @GetProductInfo(@context.Grouping.Key.ToString())
+            </GroupTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="x => x.CustomerId" Title="Customer ID" />
+        <PropertyColumn Property="x => x.ShipTo" Title="Ship To" />
+        <PropertyColumn Property="x => x.OrderNumber" Title="Order Number" />
+        <PropertyColumn Property="x => x.OrderItem" Title="Order Item" />
+        <PropertyColumn Property="x => x.ReleaseNumber" Title="Release Number" />
+        <PropertyColumn Property="x => x.ReleaseDate" Title="Release Date" CellClass="mud-align-right" Format="dd/MM/yyyy" />
+        <PropertyColumn Property="x => x.ReleaseQty" Title="Release Quantity" />
+        <PropertyColumn Property="x => x.RequestDate" Title="Request Date" CellClass="mud-align-right" Format="dd/MM/yyyy" />
+        <PropertyColumn Property="x => x.RequestQty" Title="Request Quantity" />
+        <PropertyColumn Property="x => x.ShipQty" Title="Ship Quantity" />
+        <PropertyColumn Property="x => x.ReturnQty" Title="Return Quantity" />
+        <PropertyColumn Property="x => x.Complete" Title="Complete" />
+        <PropertyColumn Property="x => x.OdyUniqueId" Title="Unique ID" />
+        <PropertyColumn Property="x => x.UpdateTimeStamp" Title="Update Timestamp" CellClass="mud-align-right" Format="dd/MM/yyyy HH:mm:ss" />
+    </Columns>
+
+    <PagerContent>
+        <MudDataGridPager T="OrderDate" />
+    </PagerContent>
+</MudDataGrid>
+
+
+@code {
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
+
+    [Inject]
+    private CachedUserData _cachedUserData { get; set; }
+
+    private List<OrderDate> _orders = new();
+
+    protected override void OnInitialized()
+    {
+        _orders = GetPurchaseOrderDetails();
+    }
+
+    private List<OrderDate> GetPurchaseOrderDetails()
+    {
+        var customerIds = _cachedUserData.Contacts.Select(c => c.ParentKey).ToList();
+
+        //var companyIds = _cachedUserData.Contacts.Select(c => c.ParentCompanyId).ToList();
+
+        var results = _dbContext.OrderDates.AsNoTracking()
+            .Where(o => customerIds.Contains(o.CustomerId) && o.ReleaseDate > DateTime.Now.AddDays(-90))
+            .Include(p => p.Product)
+            .ToList();
+
+        return results;
+    }
+
+    private string GetProductInfo(string productId)
+    {
+        var product = _orders.FirstOrDefault(p => p.ProductId.Equals(productId))?.Product;
+
+        return product == null? String.Empty : $"{product.CustPart} {product.Description}";
+    }
+}

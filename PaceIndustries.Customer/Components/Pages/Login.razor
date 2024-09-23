@@ -59,7 +59,7 @@
     {
         var customerContacts = _dbContext.Contacts.AsNoTracking().Where(c => c.Email.Equals(_model.Email) && c.Active).ToList();
 
-        if (customerContacts == null || customerContacts.Any())
+        if (customerContacts == null || !customerContacts.Any())
         {
             _errorMessage = ErrorMessage;
             return;
@@ -67,7 +67,7 @@
 
         var customerContact = customerContacts.FirstOrDefault();
 
-        var user = _dbContext.Customers.AsNoTracking().FirstOrDefault(s => s.CustomerId.Equals(customerContact.ParentKey));
+        var user = _dbContext.Customers.AsNoTracking().FirstOrDefault(s => s.CustomerId.Equals(customerContact.ParentKey) && s.Active);
 
         if (user == null)
         {
@@ -107,7 +107,7 @@
         /// </summary>
         [Required(ErrorMessage = "Username is required.")]
         [EmailAddress(ErrorMessage = "The username must be a valid email address.")]
-        public string Email { get; set; } = "wendy.utley@harley-davidson.com";
+        public string Email { get; set; } = "kelly.goode@acuitybrands.com";
 
         [Required(ErrorMessage = "Password is required.")]
         [StringLength(20, MinimumLength = 6, ErrorMessage = "Password must be between 6 and 20 characters.")]

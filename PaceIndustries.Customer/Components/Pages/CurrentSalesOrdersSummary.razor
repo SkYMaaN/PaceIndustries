@@ -1,0 +1,97 @@
+﻿@page "/current-sales-orders-summary"
+
+@attribute [Authorize]
+
+<PageTitle>Current Sales Orders Summary</PageTitle>
+
+<MudDataGrid Items="@_productSummaries" Height="88vh" ReadOnly="true" EditMode="@DataGridEditMode.Cell" Groupable="true" Hover="true" Bordered="true" Striped="true" Dense="true">
+    <Columns>
+        <HierarchyColumn />
+        <PropertyColumn Property="x => x.Description" Title="Product ID" />
+    </Columns>
+
+    <ChildRowContent>
+        <MudCard Style="margin: 8px; padding: 16px;">
+            <MudCardHeader Style="background-color: #f5f5f5; padding: 8px;">
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">@context.Item.Description (@context.Item.ProductId)</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent Style="padding: 16px;">
+                <MudGrid>
+                    <MudItem xs="3">
+                        <MudText Typo="Typo.subtitle1" GutterBottom="true">Product ID:</MudText>
+                        <MudText Typo="Typo.body1">@context.Item.ProductId</MudText>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudText Typo="Typo.subtitle1" GutterBottom="true">Total Release Quantity:</MudText>
+                        <MudText Typo="Typo.body1">@context.Item.ReleaseQty</MudText>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudText Typo="Typo.subtitle1" GutterBottom="true">Total Request Quantity:</MudText>
+                        <MudText Typo="Typo.body1">@context.Item.RequestQty</MudText>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudText Typo="Typo.subtitle1" GutterBottom="true">Total Ship Quantity:</MudText>
+                        <MudText Typo="Typo.body1">@context.Item.ShipQty</MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+    </ChildRowContent>
+
+
+    <PagerContent>
+        <MudDataGridPager T="ProductSummary" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
+
+    [Inject]
+    private CachedUserData _cachedUserData { get; set; }
+
+    private List<ProductSummary> _productSummaries = new();
+
+    protected override void OnInitialized()
+    {
+        _productSummaries = GetPurchaseOrderDetails();
+    }
+
+    private List<ProductSummary> GetPurchaseOrderDetails()
+    {
+        var customerIds = _cachedUserData.Contacts.Select(c => c.ParentKey).ToList();
+
+        var results = _dbContext.OrderDates.AsNoTracking()
+            .Where(o => customerIds.Contains(o.CustomerId) && o.ReleaseDate > DateTime.Now.AddDays(-90))
+            .Include(o => o.Product)
+            .GroupBy(o => o.ProductId)
+            .Select(g => new ProductSummary()
+            {
+                ProductId = g.Key,
+                Description = g.Any() ? g.First().Product.Description : String.Empty,
+                ReleaseQty = g.Sum(s => s.ReleaseQty),
+                RequestQty = g.Sum(s => s.RequestQty),
+                ShipQty = g.Sum(s => s.ShipQty),
+            })
+            .ToList();
+
+        return results;
+    }
+
+
+    private class ProductSummary
+    {
+        public string ProductId { get; set; }
+
+        public string Description { get; set; }
+
+        public int ReleaseQty{ get; set; }
+
+        public int RequestQty { get; set; }
+
+        public int ShipQty{ get; set; }
+    }
+}

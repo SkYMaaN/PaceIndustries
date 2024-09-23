@@ -67,7 +67,7 @@
 
         var supplierContact = supplierContacts.FirstOrDefault();
 
-        var user = _dbContext.Suppliers.AsNoTracking().FirstOrDefault(s => s.SupplierId.Equals(supplierContact.ParentKey));
+        var user = _dbContext.Suppliers.AsNoTracking().FirstOrDefault(s => s.SupplierId.Equals(supplierContact.ParentKey) && s.Active);
 
         if (user == null)
         {
