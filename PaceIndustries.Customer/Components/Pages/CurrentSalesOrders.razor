@@ -4,7 +4,7 @@
 
 <PageTitle>Current Sale Orders</PageTitle>
 
-<MudDataGrid Items="@_orders" Height="88vh" ReadOnly="true" EditMode="@DataGridEditMode.Cell" Groupable="true" Hover="true" Bordered="true" Striped="true" Dense="true">
+<MudDataGrid Items="@_orders" RowsPerPage="20" Height="88vh" ReadOnly="true" EditMode="@DataGridEditMode.Cell" Groupable="true" Hover="true" Bordered="true" Striped="true" Dense="true">
     <Columns>
         <PropertyColumn Property="x => x.CompanyId" Title="Company ID" />
         <PropertyColumn Property="x => x.ProductId" Title="Product ID" Grouping>

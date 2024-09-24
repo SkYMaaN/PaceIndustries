@@ -1,0 +1,53 @@
+﻿@page "/shipments-invoices"
+
+@attribute [Authorize]
+
+<PageTitle>Shipments Invoices</PageTitle>
+
+<MudDataGrid Items="@_salesHistoryDtls" RowsPerPage="20" Height="88vh" ReadOnly="true" EditMode="@DataGridEditMode.Cell" Groupable="true" Hover="true" Bordered="true" Striped="true" Dense="true">
+    <Columns>
+        <PropertyColumn Property="x => x.CompanyId" Title="Company ID" />
+        <PropertyColumn Property="x => x.ProductId" Title="Product ID" />
+        <PropertyColumn Property="x => x.CustomerId" Title="Customer ID" />
+        <PropertyColumn Property="x => x.ShipTo" Title="Ship To" />
+        <PropertyColumn Property="x => x.Period" Title="Period" />
+        <PropertyColumn Property="x => x.Year" Title="Year" />
+        <PropertyColumn Property="x => x.Quantity" Title="Quantity" />
+        <PropertyColumn Property="x => x.InvNumber" Title="Invoice Number" />
+        <PropertyColumn Property="x => x.Item" Title="Item" />
+        <PropertyColumn Property="x => x.UnitPrice" Title="Unit Price" />
+        <PropertyColumn Property="x => x.UpdateTimeStamp" Title="Update Timestamp" />
+    </Columns>
+
+    <PagerContent>
+        <MudDataGridPager T="SalesHistoryDtl" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
+
+    [Inject]
+    private CachedUserData _cachedUserData { get; set; }
+
+    private List<SalesHistoryDtl> _salesHistoryDtls = new();
+
+    protected override void OnInitialized()
+    {
+        _salesHistoryDtls = GetInvoices();
+    }
+
+    private List<SalesHistoryDtl> GetInvoices()
+    {
+        var customerIds = _cachedUserData.Contacts.Select(c => c.ParentKey).ToList();
+
+        var periods = Enumerable.Range(DateTime.Now.Month - 3, 4).ToList();
+
+        periods.RemoveAll(p => p < 1 || p > 12);
+
+        var result = _dbContext.SalesHistoryDtls.AsNoTracking().Where(s => customerIds.Contains(s.CustomerId) && s.Year.Equals(DateTime.Now.Year) && periods.Contains(s.Period)).ToList();
+
+        return result;
+    }
+}
