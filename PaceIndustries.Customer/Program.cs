@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using PaceIndustries.Customer.Components;
-using PaceIndustries.Customer.Data;
 using PaceIndustries.Customer.Models;
 using PaceIndustries.Customer.Services;
+using PaceIndustries.Shared.Data;
 
 namespace PaceIndustries.Customer
 {

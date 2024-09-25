@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
-using PaceIndustries.Supplier.Data.Entities;
+using PaceIndustries.Shared.Data.Entities;
 using PaceIndustries.Supplier.Models;
 using System.Security.Claims;
 
