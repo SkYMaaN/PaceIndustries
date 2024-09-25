@@ -89,6 +89,81 @@
     </MudCardActions>
 </MudCard>
 
+<MudGrid Style="margin-top: 5px;">
+    <MudItem xs="6">
+        <MudPaper Class="pa-4">
+            <div class="vc_column-inner vc_custom_1622578813639">
+                <div class="wpb_wrapper">
+                    <div class="vc_empty_space" style="height: 35px">
+                        <span class="vc_empty_space_inner"></span>
+                    </div>
+                    <div class="vc_icon_element vc_icon_element-outer vc_icon_element-align-center" style="display: flex; justify-content: center;">
+                        <div class="vc_icon_element-inner vc_icon_element-color-custom vc_icon_element-size-md vc_icon_element-style- vc_icon_element-background-color-grey">
+                            <span class="vc_icon_element-icon fas fa-clipboard-check" style="color:#cc3433 !important"></span>
+                        </div>
+                    </div>
+                    <h2 style="font-size: 25px;color: #cc3433;text-align: center" class="vc_custom_heading">SUPPLIER REQUIREMENTS</h2>
+                    <div class="vc_empty_space" style="height: 15px">
+                        <span class="vc_empty_space_inner"></span>
+                    </div>
+                    <div class="wpb_text_column wpb_content_element  vc_custom_1713812540519">
+                        <div class="wpb_wrapper">
+                            <p style="text-align: center;">
+                                Pace Supplier Quality Manual – <a href="https://paceind.com/wp-content/uploads/2024/04/Pace-Supplier-Quality-Manual.pdf" target="_blank" rel="noopener">DOWNLOAD</a>
+                            </p>
+                            <p style="text-align: center;">
+                                P.O. Terms and Conditions – <a href="https://paceind.com/p-o-terms/" target="_blank" rel="noopener">VIEW</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="6">
+        <MudPaper Class="pa-4">
+            <div class="vc_column-inner vc_custom_1559599676647">
+                <div class="wpb_wrapper">
+                    <div class="vc_empty_space" style="height: 35px">
+                        <span class="vc_empty_space_inner"></span>
+                    </div>
+                    <div class="vc_icon_element vc_icon_element-outer vc_icon_element-align-center" style="display: flex; justify-content: center;">
+                        <div class="vc_icon_element-inner vc_icon_element-color-custom vc_icon_element-size-md vc_icon_element-style- vc_icon_element-background-color-grey">
+                            <span class="vc_icon_element-icon fab fa-wpforms" style="color:#cc3433 !important"></span>
+                        </div>
+                    </div>
+                    <h2 style="font-size: 25px;color: #cc3433;text-align: center" class="vc_custom_heading">SUPPLIER FORMS</h2>
+                    <div class="vc_empty_space" style="height: 15px">
+                        <span class="vc_empty_space_inner"></span>
+                    </div>
+                    <div class="wpb_text_column wpb_content_element  vc_custom_1721661892384">
+                        <div class="wpb_wrapper">
+                            <p style="text-align: center;">
+                                Mutual Non-Disclosure Agreement – <a href="https://paceind.com/wp-content/uploads/2024/07/PACE-INDUSTRIES-MUTUAL-NDA-Template.docx" target="_blank" rel="noopener">DOWNLOAD</a>
+                            </p>
+                            <p style="text-align: center;">
+                                Supplier Assessment Form – <a href="https://paceind.com/wp-content/uploads/2024/05/Pace-SC-Form-103-Pace-Supplier-Quality-Assessment.xlsx" target="_blank" rel="noopener">DOWNLOAD</a>
+                            </p>
+                            <p style="text-align: center;">
+                                Supplier Request for Product Process Change – <a href="https://paceind.com/wp-content/uploads/2022/02/Supplier-Request-Product-Process-Change-SRPPC-2022.01.24.xlsx" target="_blank" rel="noopener">DOWNLOAD</a>
+                            </p>
+                            <p style="text-align: center;">
+                                Supplier PPAP Check List – <a href="https://paceind.com/wp-content/uploads/2022/02/Supplier-PPAP-List-Rev-3-2022.01.31.xlsx" target="_blank" rel="noopener">DOWNLOAD</a>
+                            </p>
+                            <p style="text-align: center;">
+                                Quality 8D Report –&nbsp; <a href="https://paceind.com/wp-content/uploads/2024/04/PACE-QUALITY-201F-Quality-8D-Report.docx" target="_blank" rel="noopener">DOWNLOAD</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+
+
 
 @code {
     private const string Agreement = "I acknowledge I have read the Pace Supplier Quality Manual and agreements, etc.";
@@ -109,7 +184,7 @@
     {
         _supplierAck = _dbContext.PSupplierAcks.AsNoTracking().FirstOrDefault(s => s.ParentCompanyId.Equals(_cachedUserData.ParentCompanyId));
 
-        _contact = _dbContext.Contacts.FirstOrDefault(c => c.ParentCompanyId.Equals(_cachedUserData.ParentCompanyId));
+        _contact = _cachedUserData.Contacts.FirstOrDefault();
 
         if(_supplierAck != null && _supplierAck.Ack.Equals("1"))
         {

@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaceIndustries.Customer", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaceIndustries.Supplier", "PaceIndustries.Supplier\PaceIndustries.Supplier.csproj", "{693AEC54-9B1E-444C-A634-7F0022BEAC67}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaceIndustries.Shared", "PaceIndustries.Shared\PaceIndustries.Shared.csproj", "{82606BA4-B400-4C63-A02D-9F457114EFA5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{693AEC54-9B1E-444C-A634-7F0022BEAC67}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{693AEC54-9B1E-444C-A634-7F0022BEAC67}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{693AEC54-9B1E-444C-A634-7F0022BEAC67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82606BA4-B400-4C63-A02D-9F457114EFA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82606BA4-B400-4C63-A02D-9F457114EFA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82606BA4-B400-4C63-A02D-9F457114EFA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82606BA4-B400-4C63-A02D-9F457114EFA5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

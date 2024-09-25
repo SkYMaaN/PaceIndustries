@@ -1,4 +1,4 @@
-﻿using PaceIndustries.Customer.Data.Entities;
+﻿using PaceIndustries.Shared.Data.Entities;
 
 namespace PaceIndustries.Customer.Models
 {

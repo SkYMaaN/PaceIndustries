@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
-using PaceIndustries.Customer.Data.Entities;
 using PaceIndustries.Customer.Models;
+using PaceIndustries.Shared.Data.Entities;
 using System.Security.Claims;
 
 namespace PaceIndustries.Customer.Services

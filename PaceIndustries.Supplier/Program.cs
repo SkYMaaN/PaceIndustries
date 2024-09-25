@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using PaceIndustries.Shared.Data;
 using PaceIndustries.Supplier.Components;
-using PaceIndustries.Supplier.Data;
 using PaceIndustries.Supplier.Models;
 using PaceIndustries.Supplier.Services;
 
