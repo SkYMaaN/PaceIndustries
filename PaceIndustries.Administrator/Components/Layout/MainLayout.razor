@@ -1,9 +1,52 @@
 ﻿@inherits LayoutComponentBase
 
-@Body
+@attribute [Authorize]
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Style="background-color: white;">
+        <MudGrid>
+            <MudItem xs="4">
+                <MudImage Src="Images/Logos/Logo.png" Height="60" />
+            </MudItem>
+            <MudItem xs="4" Align="center">
+                <MudText Style="color: black;" Typo="Typo.h4" Class="mb-4">@_title</MudText>
+            </MudItem>
+            <MudItem xs="4" Align="right">
+                <MudIconButton Href="/logout" Icon="@Icons.Material.Outlined.Logout" />
+            </MudItem>
+        </MudGrid>
+    </MudAppBar>
+
+    <MudDrawer Open="true" Width="350px;" ClipMode="DrawerClipMode.Always" Elevation="2" Style="background-color: lightgray;">
+        <MudText Style="font-size: large; font-weight: bolder; margin-top: 10px; margin-bottom: 10px; margin-left: 28px;">Hello, @_cachedUserData.UserName</MudText>
+
+        <AuthorizeView Roles="administrator">
+            <Authorized>
+                <MudNavMenu Bordered="true">
+                    <MudNavLink Href="/new-customers-queue"><div onclick="@(() => ChangeTitle("Administration Queue"))">New Customers Queue</div></MudNavLink>
+                    <MudNavLink Href="/contact"><div onclick="@(() => ChangeTitle("Contact"))">Administration Contact</div></MudNavLink>
+                </MudNavMenu>
+            </Authorized>
+        </AuthorizeView>
+    </MudDrawer>
+
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    [Inject]
+    private CachedUserData _cachedUserData { get; set; }
+
+    private string _title;
+
+    private void ChangeTitle(string title) => _title = title;
+}

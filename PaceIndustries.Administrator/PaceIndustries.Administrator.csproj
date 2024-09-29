@@ -4,6 +4,16 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>b83162e9-ebc3-4271-a536-e702d036ba2f</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MudBlazor" Version="7.8.0" />
+    <PackageReference Include="MudBlazor.ThemeManager" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PaceIndustries.Shared\PaceIndustries.Shared.csproj" />
+  </ItemGroup>
 
 </Project>

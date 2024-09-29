@@ -1,0 +1,22 @@
+﻿<MudPopover Open="@Open" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.BottomLeft">
+    <div class="d-flex flex-column" style="max-width: 400px;">
+        <MudText>@Text</MudText>
+        <MudButton OnClick="@ToggleOpen" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
+    </div>
+</MudPopover>
+
+@code {
+    private const string Text = "Please check your username - email address - password and try again and or send an email to helpportal@paceind.com";
+
+    [Parameter]
+    public bool Open { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
+
+    private void ToggleOpen()
+    {
+        Open = !Open;
+        OpenChanged.InvokeAsync(Open);
+    }
+}
