@@ -1,6 +1,6 @@
 ﻿using PaceIndustries.Shared.Data.Entities;
 
-namespace PaceIndustries.Customer.Models
+namespace PaceIndustries.Shared.Models
 {
     public class CachedUserData
     {

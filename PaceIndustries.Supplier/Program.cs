@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using PaceIndustries.Shared.Data;
+using PaceIndustries.Shared.Models;
+using PaceIndustries.Shared.Services;
 using PaceIndustries.Supplier.Components;
-using PaceIndustries.Supplier.Models;
-using PaceIndustries.Supplier.Services;
 
 namespace PaceIndustries.Supplier
 {
@@ -22,8 +22,8 @@ namespace PaceIndustries.Supplier
 
             builder.Services.AddCascadingAuthenticationState();
 
-            builder.Services.AddScoped<CustomAuthenticationStateProvider>();
-            builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthenticationStateProvider>());
+            builder.Services.AddScoped<PaceAuthenticationStateProvider>();
+            builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<PaceAuthenticationStateProvider>());
 
             builder.Configuration.AddUserSecrets<Program>();
 

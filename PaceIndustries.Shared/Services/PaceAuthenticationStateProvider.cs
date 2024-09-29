@@ -1,16 +1,16 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
-using PaceIndustries.Customer.Models;
 using PaceIndustries.Shared.Data.Entities;
+using PaceIndustries.Shared.Models;
 using System.Security.Claims;
 
-namespace PaceIndustries.Customer.Services
+namespace PaceIndustries.Shared.Services
 {
-    public class CustomAuthenticationStateProvider : AuthenticationStateProvider
+    public class PaceAuthenticationStateProvider : AuthenticationStateProvider
     {
         private readonly CachedUserData _cachedUserData;
 
         private ClaimsPrincipal CurrentUser { get; set; }
-        public CustomAuthenticationStateProvider(CachedUserData cachedUserData)
+        public PaceAuthenticationStateProvider(CachedUserData cachedUserData)
         {
             CurrentUser = GetAnonymous();
             _cachedUserData = cachedUserData;
@@ -52,12 +52,12 @@ namespace PaceIndustries.Customer.Services
 
         public Task<AuthenticationState> Logout()
         {
-            _cachedUserData.ParentKey = String.Empty;
-            _cachedUserData.ParentCompanyId = String.Empty;
+            _cachedUserData.ParentKey = string.Empty;
+            _cachedUserData.ParentCompanyId = string.Empty;
             _cachedUserData.Contacts.Clear();
-            _cachedUserData.UserName = String.Empty;
-            _cachedUserData.Email = String.Empty;
-            _cachedUserData.Role = String.Empty;
+            _cachedUserData.UserName = string.Empty;
+            _cachedUserData.Email = string.Empty;
+            _cachedUserData.Role = string.Empty;
 
             CurrentUser = GetAnonymous();
             var task = GetAuthenticationStateAsync();

@@ -44,7 +44,7 @@
     private const string ErrorMessage = "Incorrect username or password \nand or incorrect account \nplease retry or use the help option";
 
     [Inject] 
-    private CustomAuthenticationStateProvider _authStateProvider { get; set; }
+    private PaceAuthenticationStateProvider _authStateProvider { get; set; }
 
     [Inject]
     private ApplicationDbContext _dbContext { get; set; }
