@@ -1,7 +1,125 @@
 ﻿@page "/contact"
 
+@attribute [Authorize]
+
 <PageTitle>Contact</PageTitle>
 
-@code {
+<PasswordPopover Open="@_passwordPopoverOpen" OpenChanged="@(value => _passwordPopoverOpen = value)" UserEmail="@_selectedPW?.Email" OnPasswordUpdated="@HandlePasswordUpdated" />
 
+<MudDataGrid Items="@_pws" RowsPerPage="20" Height="88vh" ReadOnly="true" EditMode="@DataGridEditMode.Cell" Groupable="true" Hover="true" Bordered="true" Striped="true" Dense="true">
+    <Columns>
+        <PropertyColumn Property="x => x.PwId" Title="Pw Id" />
+        <PropertyColumn Property="x => x.Email" Title="Email" />
+        <PropertyColumn Property="x => x.CreatedAt" Title="Created At" />
+        <PropertyColumn Property="x => x.UpdatedAt" Title="Updated At" />
+        <TemplateColumn CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudStack Row>
+                    <MudButton OnClick="@(() => ResetPassword(context.Item.Email))" Size="@Size.Small" Variant="@Variant.Filled" Style="@($"background-color:{Colors.Red.Accent3}; color:black;")">Reset password</MudButton>
+                </MudStack>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+
+    <PagerContent>
+        <MudDataGridPager T="Pw" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    [Inject]
+    private IEmailService _emailService { get; set; }
+
+    [Inject]
+    private IDialogService _dialogService { get; set; }
+
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
+
+    private List<Pw> _pws = new();
+
+    private Pw? _selectedPW;
+
+    private bool _passwordPopoverOpen;
+
+    protected override void OnInitialized()
+    {
+        _pws = GetPWs();
+    }
+
+    private List<Pw> GetPWs()
+    {
+        var results = _dbContext.Pws.AsNoTracking()
+            .ToList();
+
+        return results;
+    }
+
+    private void ResetPassword(string email)
+    {
+        _selectedPW = _pws.FirstOrDefault(p => p.Email.Equals(email));
+
+        if (_selectedPW == null)
+        {
+            return;
+        }
+
+        _passwordPopoverOpen = true;
+    }
+
+    private void HandlePasswordUpdated(Pw updatedPW)
+    {
+        int pwIdx = _pws.IndexOf(_selectedPW);
+        _pws.RemoveAt(pwIdx);
+        _pws.Insert(pwIdx, updatedPW);
+
+        _selectedPW = null;
+
+        _passwordPopoverOpen = false;
+
+        _dialogService.ShowMessageBox("Password Updated Successfully", "The user's password has been successfully updated. A email containing their updated password has been sent to their email address.", "Ok");
+
+        SendPasswordEmail(updatedPW.Email, updatedPW.PasswordHash);
+    }
+
+    private void SendPasswordEmail(string toEmail, string password)
+    {
+        const string Subject = "Important: Your Password Has Been Reset for Security Reasons";
+
+        var contact = _dbContext.Contacts.AsNoTracking().FirstOrDefault(c => c.Email.Equals(toEmail));
+        var pnContact = _dbContext.PnContacts.AsNoTracking().FirstOrDefault(c => c.Email.Equals(toEmail));
+
+        string userName = String.Empty;
+
+        if (contact != null)
+        {
+            userName = $"{contact.FirstName} {contact.LastName}";
+        }
+        else if (pnContact != null)
+        {
+            userName = $"{pnContact.FirstName} {pnContact.LastName}";
+        }
+        else
+        {
+            return;
+        }
+
+        string body = $@"<html>
+                      <body>
+                        <h2>Dear {userName},</h2>
+                        <p>We hope this message finds you well.</p>
+                        <p>Visit <a href='https://paceind.com'>Paceind Portal</a>
+                        </p>
+                        <p>Please use new, secure password: <strong>{password}</strong>
+                        </p>
+                        <p>If you need help or have any questions, please don't hesitate to contact our support team at <a href='mailto:helpportal@paceind.com'>helpportal@paceind.com</a>
+                        </p>
+                        <br>
+                        <p>Thank you for your cooperation.</p>
+                        <p>Best regards, <br>Pace Industries <br>Customer Support Team </p>
+                      </body>
+                    </html>";
+
+        _emailService.SendEmailAsync(toEmail, Subject, body, true);
+    }
 }

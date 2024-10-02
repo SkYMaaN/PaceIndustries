@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using PaceIndustries.Administrator.Components;
+using PaceIndustries.Shared.Abstractions;
 using PaceIndustries.Shared.Data;
 using PaceIndustries.Shared.Models;
 using PaceIndustries.Shared.Services;
@@ -43,6 +44,13 @@ namespace PaceIndustries.Administrator
                     options.LoginPath = "/login";
                     options.AccessDeniedPath = "/login";
                 });
+
+            builder.Services.AddSingleton<IEmailService>(sp => new EmailService(
+                builder.Configuration["Smtp:Server"],
+                int.Parse(builder.Configuration["Smtp:Port"]),
+                builder.Configuration["Smtp:User"],
+                builder.Configuration["Smtp:Password"]
+            ));
 
             var app = builder.Build();
 

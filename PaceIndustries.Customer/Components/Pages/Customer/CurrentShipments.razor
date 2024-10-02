@@ -1,6 +1,6 @@
 ﻿@page "/current-shipments"
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = PaceRole.Customer)]
 
 <PageTitle>Current Shipments</PageTitle>
 

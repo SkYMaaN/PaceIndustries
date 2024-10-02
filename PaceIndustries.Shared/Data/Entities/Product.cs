@@ -65,6 +65,9 @@ public partial class Product
     [InverseProperty("Product")]
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
+    [InverseProperty("ProductNavigation")]
+    public virtual ICollection<ProductionHistory> ProductionHistories { get; set; } = new List<ProductionHistory>();
+
     [InverseProperty("Product")]
     public virtual ICollection<SalesHistoryDtl> SalesHistoryDtls { get; set; } = new List<SalesHistoryDtl>();
 }

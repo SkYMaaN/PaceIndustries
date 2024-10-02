@@ -1,4 +1,5 @@
 ﻿@page "/login"
+
 @layout GuestLayout
 
 @inject NavigationManager NavigationManager
@@ -92,7 +93,7 @@
 
         string userName = $"{supplierContact.FirstName} {supplierContact.LastName}";
 
-        var result = await _authStateProvider.ChangeUser(supplierContact.ParentKey, supplierContact.ParentCompanyId, supplierContacts, userName, supplierContact.Email, "supplier");
+        var result = await _authStateProvider.LoginAsUser(supplierContact.ParentKey, supplierContact.ParentCompanyId, supplierContacts, userName, supplierContact.Email, PaceRole.Supplier);
 
         if (result.User.Identity.IsAuthenticated)
         {

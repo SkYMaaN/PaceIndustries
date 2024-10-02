@@ -25,7 +25,7 @@
     <MudDrawer Open="true" Width="350px;" ClipMode="DrawerClipMode.Always" Elevation="2" Style="background-color: lightgray;">
         <MudText Style="font-size: large; font-weight: bolder; margin-top: 10px; margin-bottom: 10px; margin-left: 28px;">Hello, @_cachedUserData.UserName</MudText>
 
-        <AuthorizeView Roles="supplier">
+        <AuthorizeView Roles="@PaceRole.Supplier">
             <Authorized>
                 <MudNavMenu Bordered="true">
                     <MudNavLink Href="/current-orders"><div onclick="@(() => ChangeTitle("Current Orders"))">Current Orders</div></MudNavLink>

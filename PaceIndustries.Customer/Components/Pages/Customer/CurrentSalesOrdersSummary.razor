@@ -1,6 +1,6 @@
 ﻿@page "/current-sales-orders-summary"
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = PaceRole.Customer)]
 
 <PageTitle>Current Sales Orders Summary</PageTitle>
 

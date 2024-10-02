@@ -56,25 +56,15 @@
 
     private async void OnValidSubmit()
     {
-        var customerContacts = _dbContext.Contacts.AsNoTracking().Where(c => c.Email.Equals(_model.Email) && c.Active).ToList();
+        var adminContact = _dbContext.Contacts.AsNoTracking().FirstOrDefault(c => c.Email.Equals(_model.Email) && c.Active);
 
-        if (customerContacts == null || !customerContacts.Any())
+        if (adminContact == null)
         {
             _errorMessage = ErrorMessage;
             return;
         }
 
-        var customerContact = customerContacts.FirstOrDefault();
-
-        var user = _dbContext.Customers.AsNoTracking().FirstOrDefault(s => s.CustomerId.Equals(customerContact.ParentKey) && s.Active);
-
-        if (user == null)
-        {
-            _errorMessage = ErrorMessage;
-            return;
-        }
-
-        var password = _dbContext.Pws.AsNoTracking().FirstOrDefault(p => p.Email.Equals(customerContact.Email));
+        var password = _dbContext.Pws.AsNoTracking().FirstOrDefault(p => p.Email.Equals(adminContact.Email));
 
         if (password == null)
         {
@@ -89,9 +79,9 @@
             return;
         }
 
-        string userName = $"{customerContact.FirstName} {customerContact.LastName}";
+        string userName = $"{adminContact.FirstName} {adminContact.LastName}";
 
-        var result = await _authStateProvider.ChangeUser(customerContact.ParentKey, customerContact.ParentCompanyId, customerContacts, userName, customerContact.Email, "administrator");
+        var result = await _authStateProvider.LoginAsUser(adminContact.ParentKey, adminContact.ParentCompanyId, new List<Shared.Data.Entities.Contact>() { adminContact }, userName, adminContact.Email, PaceRole.Administrator);
 
         if (result.User.Identity.IsAuthenticated)
         {
@@ -110,6 +100,6 @@
 
         [Required(ErrorMessage = "Password is required.")]
         [StringLength(20, MinimumLength = 6, ErrorMessage = "Password must be between 6 and 20 characters.")]
-        public string Password { get; set; } = "Pace#1";
+        public string Password { get; set; } = "Password1";
     }
 }

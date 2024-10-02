@@ -38,9 +38,15 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<PSupplierUploadFile> PSupplierUploadFiles { get; set; }
 
+    public virtual DbSet<PaContact> PaContacts { get; set; }
+
     public virtual DbSet<Period> Periods { get; set; }
 
     public virtual DbSet<Plant> Plants { get; set; }
+
+    public virtual DbSet<PnContact> PnContacts { get; set; }
+
+    public virtual DbSet<PnProduct> PnProducts { get; set; }
 
     public virtual DbSet<Podate> Podates { get; set; }
 
@@ -49,6 +55,8 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<Poitem> Poitems { get; set; }
 
     public virtual DbSet<Product> Products { get; set; }
+
+    public virtual DbSet<ProductionHistory> ProductionHistories { get; set; }
 
     public virtual DbSet<Pw> Pws { get; set; }
 
@@ -289,6 +297,13 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
         });
 
+        modelBuilder.Entity<PaContact>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__paContac__3214EC07D613F51D");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+        });
+
         modelBuilder.Entity<Period>(entity =>
         {
             entity.HasKey(e => new { e.PeriodNumber, e.Year }).HasName("con_pk_period");
@@ -306,6 +321,18 @@ public partial class ApplicationDbContext : DbContext
             entity.ToTable("Plant", tb => tb.HasTrigger("TRG_Plant_UpdateDate"));
 
             entity.Property(e => e.UpdateTimeStamp).HasDefaultValueSql("(getdate())");
+        });
+
+        modelBuilder.Entity<PnContact>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__pnContac__3214EC074B8C4241");
+        });
+
+        modelBuilder.Entity<PnProduct>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__pProduct__3214EC0795CB6422");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
         });
 
         modelBuilder.Entity<Podate>(entity =>
@@ -404,6 +431,52 @@ public partial class ApplicationDbContext : DbContext
                 .HasForeignKey(d => new { d.CustomerId, d.CompanyId })
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("con_fk_product_customer");
+        });
+
+        modelBuilder.Entity<ProductionHistory>(entity =>
+        {
+            entity.HasKey(e => e.OdyUniqueId).HasName("PK__Producti__CB1247698AEA667C");
+
+            entity.ToTable("ProductionHistory", tb => tb.HasTrigger("TRG_ProductionHistory_UpdateDate"));
+
+            entity.Property(e => e.OdyUniqueId).ValueGeneratedNever();
+            entity.Property(e => e.AdjStartAp).IsFixedLength();
+            entity.Property(e => e.AdjStartTime).IsFixedLength();
+            entity.Property(e => e.AdjStopAp).IsFixedLength();
+            entity.Property(e => e.AutoAllocProdMeth).IsFixedLength();
+            entity.Property(e => e.Chgflag).IsFixedLength();
+            entity.Property(e => e.ConsLocType).IsFixedLength();
+            entity.Property(e => e.ConsType).IsFixedLength();
+            entity.Property(e => e.CostFlag).IsFixedLength();
+            entity.Property(e => e.ExportStatus).IsFixedLength();
+            entity.Property(e => e.GenContainerId).IsFixedLength();
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.InspectStatus).IsFixedLength();
+            entity.Property(e => e.InvAffected).IsFixedLength();
+            entity.Property(e => e.MoldStopAp).IsFixedLength();
+            entity.Property(e => e.Ordertype).IsFixedLength();
+            entity.Property(e => e.ProductType).IsFixedLength();
+            entity.Property(e => e.PunchStartAp).IsFixedLength();
+            entity.Property(e => e.PunchStopAp).IsFixedLength();
+            entity.Property(e => e.Rmatype).IsFixedLength();
+            entity.Property(e => e.SampleType).IsFixedLength();
+            entity.Property(e => e.ScrappedAt).IsFixedLength();
+            entity.Property(e => e.SerialLevel).IsFixedLength();
+            entity.Property(e => e.Shift).IsFixedLength();
+            entity.Property(e => e.StageMethod).IsFixedLength();
+            entity.Property(e => e.UpdateTimeStamp).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.Company).WithMany(p => p.ProductionHistories)
+                .HasPrincipalKey(p => p.CompanyId)
+                .HasForeignKey(d => d.CompanyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Productio__Compa__78B651CF");
+
+            entity.HasOne(d => d.ProductNavigation).WithMany(p => p.ProductionHistories)
+                .HasPrincipalKey(p => new { p.ProductId, p.CompanyId })
+                .HasForeignKey(d => new { d.Product, d.CompanyId })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("con_fk_productionhistory_product");
         });
 
         modelBuilder.Entity<Pw>(entity =>

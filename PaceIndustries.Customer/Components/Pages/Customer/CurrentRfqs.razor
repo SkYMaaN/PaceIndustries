@@ -1,6 +1,6 @@
 ﻿@page "/current-rfqs"
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = PaceRole.Customer)]
 
 <PageTitle>Current Rfq's</PageTitle>
 

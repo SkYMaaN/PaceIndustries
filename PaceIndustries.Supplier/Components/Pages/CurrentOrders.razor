@@ -3,8 +3,6 @@
 
 @attribute [Authorize]
 
-@using PaceIndustries.Supplier.Models.PurchaseOrder
-
 <PageTitle>Current Orders</PageTitle>
 
 <MudDataGrid Items="@_orders" RowsPerPage="20" Height="88vh" ReadOnly="true" EditMode="@DataGridEditMode.Cell" Hover="true" Bordered="true" Striped="true" Dense="true">

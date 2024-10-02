@@ -25,7 +25,7 @@
     <MudDrawer Open="true" Width="350px;" ClipMode="DrawerClipMode.Always" Elevation="2" Style="background-color: lightgray;">
         <MudText Style="font-size: large; font-weight: bolder; margin-top: 10px; margin-bottom: 10px; margin-left: 28px;">Hello, @_cachedUserData.UserName</MudText>
 
-        <AuthorizeView Roles="customer">
+        <AuthorizeView Roles="@PaceRole.Customer">
             <Authorized>
                 <MudNavMenu Bordered="true">
                     <MudNavGroup Title="Current Orders" Expanded="true">
@@ -35,6 +35,14 @@
                     <MudNavLink Href="/shipments-invoices"><div onclick="@(() => ChangeTitle("Shipments / Invoices"))">Shipments / Invoices</div></MudNavLink>
                     <MudNavLink Href="/current-rfqs"><div onclick="@(() => ChangeTitle("Current RFQ's"))">Current RFQ's</div></MudNavLink>
                     <MudNavLink Href="/current-shipments"><div onclick="@(() => ChangeTitle("Current Shipments"))">Current Shipments</div></MudNavLink>
+                </MudNavMenu>
+            </Authorized>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="@PaceRole.PreCustomer">
+            <Authorized>
+                <MudNavMenu Bordered="true">
+                    <MudNavLink Href="/pre-customer-files"><div onclick="@(() => ChangeTitle("Pre Customer Files"))">Pre Customer Files</div></MudNavLink>
                 </MudNavMenu>
             </Authorized>
         </AuthorizeView>

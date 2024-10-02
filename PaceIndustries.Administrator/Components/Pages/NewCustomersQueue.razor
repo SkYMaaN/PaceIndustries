@@ -1,7 +1,89 @@
 ﻿@page "/new-customers-queue"
 
+@attribute [Authorize]
+
 <PageTitle>New Customers Queue</PageTitle>
 
-@code {
+<PasswordPopover Open="@_passwordPopoverOpen" OpenChanged="@(value => _passwordPopoverOpen = value)" UserEmail="@_selectedRequest?.Email" OnPasswordCreated="@HandlePasswordCreated" />
 
+<MudDataGrid Items="@_registrationRequests" RowsPerPage="20" Height="88vh" ReadOnly="true" EditMode="@DataGridEditMode.Cell" Groupable="true" Hover="true" Bordered="true" Striped="true" Dense="true">
+    <Columns>
+        <PropertyColumn Property="x => x.CustomerName" Title="Customer Name" />
+        <PropertyColumn Property="x => x.Email" Title="Email" />
+        <PropertyColumn Property="x => x.CustomerWebsite" Title="Web" />
+        <TemplateColumn CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudStack Row>
+                    <MudButton OnClick="@(() => ApproveRequest(context.Item.Id))" Size="@Size.Small" Variant="@Variant.Filled" Style="@($"background-color:{Colors.Green.Accent3}; color:black;")">Approve</MudButton>
+                </MudStack>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+
+    <PagerContent>
+        <MudDataGridPager T="PnContact" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    [Inject]
+    private IDialogService _dialogService { get; set; }
+
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
+
+    private List<PnContact> _registrationRequests = new();
+
+    private PnContact? _selectedRequest;
+
+    private bool _passwordPopoverOpen;
+
+    protected override void OnInitialized()
+    {
+        _registrationRequests = GetRegistrionRequests();
+    }
+
+    private List<PnContact> GetRegistrionRequests()
+    {
+        var results = (from contact in _dbContext.PnContacts
+                       join pw in _dbContext.Pws
+                       on contact.Email equals pw.Email into contactPWGroup
+                       from pw in contactPWGroup.DefaultIfEmpty()
+                       where pw == null
+                       select contact).AsNoTracking().ToList();
+
+        return results;
+
+    }
+
+    private void ApproveRequest(long requestId)
+    {
+        _selectedRequest = _registrationRequests.FirstOrDefault(p => p.Id.Equals(requestId));
+
+        if(_selectedRequest == null)
+        {
+            return;
+        }
+
+        _passwordPopoverOpen = true;
+    }
+
+    private void HandlePasswordCreated()
+    {
+        var request = _dbContext.PnContacts.FirstOrDefault(p => p.Id.Equals(_selectedRequest.Id));
+
+        if(request != null)
+        {
+            request.Active = true;
+            _dbContext.PnContacts.Update(request);
+            _dbContext.SaveChanges();
+        }
+
+        _registrationRequests.Remove(_selectedRequest);
+        _selectedRequest = null;
+
+        _passwordPopoverOpen = false;
+
+        _dialogService.ShowMessageBox("Request successfully approved!", String.Empty, "Ok");
+    }
 }

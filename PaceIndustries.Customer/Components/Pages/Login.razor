@@ -1,11 +1,14 @@
 ﻿@page "/login"
+
 @layout GuestLayout
 
 @inject NavigationManager NavigationManager
 
 <PageTitle>Sign In</PageTitle>
 
-<HelpPopover Open="@_popoverOpen" OpenChanged="@(value => _popoverOpen = value)" />
+<HelpPopover Open="@_helpPopoverOpen" OpenChanged="@(value => _helpPopoverOpen = value)" />
+
+<RegistrationPopover Open="@_registrationPopoverOpen" OpenChanged="@(value => _registrationPopoverOpen = value)" />
 
 <div class="d-flex justify-content-center align-items-center" style="height:100vh;">
     <MudCard Style="width: 300px;">
@@ -30,7 +33,9 @@
                 <div style="display: flex; justify-content: space-between; margin-top: 16px;">
                     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Style="@($"background-color:{Colors.Gray.Lighten3}; color:black;")">Sign In</MudButton>
 
-                    <MudButton OnClick="@(() => {_popoverOpen = true;})" Variant="Variant.Filled" Style="@($"background-color:{Colors.Gray.Lighten3}; color:black;")">Help</MudButton>
+                    <MudButton OnClick="@(() => {_registrationPopoverOpen = true;})" Variant="Variant.Filled" Style="@($"background-color:{Colors.Gray.Lighten3}; color:black;")">New</MudButton>
+
+                    <MudButton OnClick="@(() => {_helpPopoverOpen = true;})" Variant="Variant.Filled" Style="@($"background-color:{Colors.Gray.Lighten3}; color:black;")">Help</MudButton>
                 </div>
             </EditForm>
         </MudCardContent>
@@ -51,17 +56,29 @@
 
     private string _errorMessage;
 
-    private bool _popoverOpen;
+    private bool _registrationPopoverOpen;
+
+    private bool _helpPopoverOpen;
 
     private async void OnValidSubmit()
     {
-        var customerContacts = _dbContext.Contacts.AsNoTracking().Where(c => c.Email.Equals(_model.Email) && c.Active).ToList();
-
-        if (customerContacts == null || !customerContacts.Any())
+        if (_dbContext.Contacts.AsNoTracking().Any(c => c.Email.Equals(_model.Email) && c.Active))
+        {
+            LoginAsCustomer();
+        }
+        else if (_dbContext.PnContacts.AsNoTracking().Any(c => c.Email.Equals(_model.Email) && c.Active))
+        {
+            LoginAsPreCustomer();
+        }
+        else
         {
             _errorMessage = ErrorMessage;
-            return;
         }
+    }
+
+    private async void LoginAsCustomer()
+    {
+        var customerContacts = _dbContext.Contacts.AsNoTracking().Where(c => c.Email.Equals(_model.Email) && c.Active).ToList();
 
         var customerContact = customerContacts.FirstOrDefault();
 
@@ -90,7 +107,42 @@
 
         string userName = $"{customerContact.FirstName} {customerContact.LastName}";
 
-        var result = await _authStateProvider.ChangeUser(customerContact.ParentKey, customerContact.ParentCompanyId, customerContacts, userName, customerContact.Email, "customer");
+        var result = await _authStateProvider.LoginAsUser(customerContact.ParentKey, customerContact.ParentCompanyId, customerContacts, userName, customerContact.Email, PaceRole.Customer);
+
+        if (result.User.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
+    private async void LoginAsPreCustomer()
+    {
+        var preCustomerContact = _dbContext.PnContacts.AsNoTracking().FirstOrDefault(c => c.Email.Equals(_model.Email) && c.Active);
+
+        if (preCustomerContact == null)
+        {
+            _errorMessage = ErrorMessage;
+            return;
+        }
+
+        var password = _dbContext.Pws.AsNoTracking().FirstOrDefault(p => p.Email.Equals(preCustomerContact.Email));
+
+        if (password == null)
+        {
+            _errorMessage = ErrorMessage;
+            return;
+        }
+
+        //rework with hash
+        if (!password.PasswordHash.Equals(_model.Password))
+        {
+            _errorMessage = ErrorMessage;
+            return;
+        }
+
+        string userName = $"{preCustomerContact.FirstName} {preCustomerContact.LastName}";
+
+        var result = await _authStateProvider.LoginAsPreUser(userName, preCustomerContact.Email, PaceRole.PreCustomer);
 
         if (result.User.Identity.IsAuthenticated)
         {

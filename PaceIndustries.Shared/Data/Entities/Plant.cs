@@ -62,6 +62,9 @@ public partial class Plant
     public virtual ICollection<Poitem> Poitems { get; set; } = new List<Poitem>();
 
     [InverseProperty("Company")]
+    public virtual ICollection<ProductionHistory> ProductionHistories { get; set; } = new List<ProductionHistory>();
+
+    [InverseProperty("Company")]
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 
     [InverseProperty("Company")]

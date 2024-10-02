@@ -7,25 +7,18 @@ namespace PaceIndustries.Shared.Services
 {
     public class PaceAuthenticationStateProvider : AuthenticationStateProvider
     {
+        /// <summary>
+        /// Contains information about authenticated user ( supplier, customer, administrator )
+        /// </summary>
+        /// <remarks>Do not use with Pre-Users!!!</remarks>
         private readonly CachedUserData _cachedUserData;
 
         private ClaimsPrincipal CurrentUser { get; set; }
+
         public PaceAuthenticationStateProvider(CachedUserData cachedUserData)
         {
-            CurrentUser = GetAnonymous();
+            CurrentUser = CreateAnonymousUser();
             _cachedUserData = cachedUserData;
-        }
-
-        private ClaimsPrincipal GetAnonymous()
-        {
-            var identity = new ClaimsIdentity(new[]
-            {
-            new Claim(ClaimTypes.Sid, "0"),
-            new Claim(ClaimTypes.Name, "Anonymous"),
-            new Claim(ClaimTypes.Email, "Anonymous"),
-            new Claim(ClaimTypes.Role, "Anonymous")
-        }, null);
-            return new ClaimsPrincipal(identity);
         }
 
         public override Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -34,7 +27,7 @@ namespace PaceIndustries.Shared.Services
             return task;
         }
 
-        public Task<AuthenticationState> ChangeUser(string parentKey, string parentCompanyId, List<Contact> userContacts, string username, string email, string role)
+        public Task<AuthenticationState> LoginAsUser(string parentKey, string parentCompanyId, List<Contact> userContacts, string username, string email, string role)
         {
             _cachedUserData.ParentKey = parentKey;
             _cachedUserData.ParentCompanyId = parentCompanyId;
@@ -44,7 +37,17 @@ namespace PaceIndustries.Shared.Services
             _cachedUserData.Email = email;
             _cachedUserData.Role = role;
 
-            CurrentUser = GetUser(parentKey, username, email, role);
+            CurrentUser = CreateUser(parentKey, username, email, role);
+
+            var task = GetAuthenticationStateAsync();
+            NotifyAuthenticationStateChanged(task);
+            return task;
+        }
+
+        public Task<AuthenticationState> LoginAsPreUser(string username, string email, string role)
+        {
+            CurrentUser = CreatePreUser(username, email, role);
+
             var task = GetAuthenticationStateAsync();
             NotifyAuthenticationStateChanged(task);
             return task;
@@ -59,21 +62,51 @@ namespace PaceIndustries.Shared.Services
             _cachedUserData.Email = string.Empty;
             _cachedUserData.Role = string.Empty;
 
-            CurrentUser = GetAnonymous();
+            CurrentUser = CreateAnonymousUser();
+
             var task = GetAuthenticationStateAsync();
             NotifyAuthenticationStateChanged(task);
             return task;
         }
 
-        private ClaimsPrincipal GetUser(string id, string username, string email, string role)
+        private ClaimsPrincipal CreateUser(string id, string username, string email, string role)
         {
             var identity = new ClaimsIdentity(new[]
             {
-            new Claim(ClaimTypes. Sid, id),
-            new Claim(ClaimTypes.Name, username),
-            new Claim(ClaimTypes.Email, email),
-            new Claim(ClaimTypes.Role, role)
-        }, "Authentication type");
+                new Claim(ClaimTypes. Sid, id),
+                new Claim(ClaimTypes.Name, username),
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Role, role)
+            }, 
+            "Authentication type");
+
+            return new ClaimsPrincipal(identity);
+        }
+
+        private ClaimsPrincipal CreatePreUser(string username, string email, string role)
+        {
+            var identity = new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Name, username),
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Role, role)
+            },
+            "Authentication type");
+
+            return new ClaimsPrincipal(identity);
+        }
+
+        private ClaimsPrincipal CreateAnonymousUser()
+        {
+            var identity = new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Sid, "0"),
+                new Claim(ClaimTypes.Name, "Anonymous"),
+                new Claim(ClaimTypes.Email, "Anonymous"),
+                new Claim(ClaimTypes.Role, "Anonymous")
+            },
+            null);
+
             return new ClaimsPrincipal(identity);
         }
     }

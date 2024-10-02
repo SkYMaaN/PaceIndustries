@@ -46,6 +46,12 @@ public partial class SalesHistoryDtl
     [Column(TypeName = "datetime")]
     public DateTime UpdateTimeStamp { get; set; }
 
+    [Column(TypeName = "datetime")]
+    public DateTime? Date { get; set; }
+
+    [Column(TypeName = "datetime")]
+    public DateTime? InvDate { get; set; }
+
     [ForeignKey("CustomerId, CompanyId")]
     [InverseProperty("SalesHistoryDtls")]
     public virtual Customer Customer { get; set; } = null!;

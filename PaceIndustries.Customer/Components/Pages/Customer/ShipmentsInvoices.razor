@@ -1,6 +1,6 @@
 ﻿@page "/shipments-invoices"
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = PaceRole.Customer)]
 
 <PageTitle>Shipments Invoices</PageTitle>
 

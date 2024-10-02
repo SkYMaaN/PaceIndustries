@@ -1,0 +1,186 @@
+﻿<MudPopover Open="@Open" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter">
+    <MudImage Src="Images/Logos/Logo.png" Style="width: 300px;" Class="rounded-lg" />
+    <MudText Typo="Typo.h5">New Customer</MudText>
+
+    <EditForm Model="@_newCustomer" OnValidSubmit="OnValidSave" FormName="CustomerRegistrationForm">
+        <DataAnnotationsValidator />
+
+        <MudText Align="Align.Center" Typo="Typo.subtitle1" Class="mt-4 mb-2">Customer</MudText>
+
+        <MudTextField Label="Customer Name" @bind-Value="_newCustomer.CustomerName" For="@(() => _newCustomer.CustomerName)" />
+
+        <MudTextField Label="Customer Website" @bind-Value="_newCustomer.CustomerWebsite" For="@(() => _newCustomer.CustomerWebsite)" />
+
+        <MudTextField Label="Customer Location" @bind-Value="_newCustomer.CustomerLocation" For="@(() => _newCustomer.CustomerLocation)" />
+
+        <MudText Align="Align.Center" Typo="Typo.subtitle1" Class="mt-4 mb-2">Contact</MudText>
+
+        <MudTextField Label="First Name" @bind-Value="_newCustomer.FirstName" For="@(() => _newCustomer.FirstName)" />
+
+        <MudTextField Label="Last Name" @bind-Value="_newCustomer.LastName" For="@(() => _newCustomer.LastName)" />
+
+        <MudTextField Label="Email" @bind-Value="_newCustomer.Email" For="@(() => _newCustomer.Email)" />
+
+        <MudTextField Label="Phone Number" @bind-Value="_newCustomer.PhoneNumber" For="@(() => _newCustomer.PhoneNumber)" />
+
+        <MudSelect Label="Lead Source" @bind-Value="_newCustomer.LeadSource" For="@(() => _newCustomer.LeadSource)" Style="margin-top: 15px;">
+            <MudSelectItem Value="LeadSource.None" />
+            <MudSelectItem Value="LeadSource.Web">Web</MudSelectItem>
+            <MudSelectItem Value="LeadSource.Referral">Referral</MudSelectItem>
+        </MudSelect>
+
+        <MudText Style="@($"color:{Colors.Red.Accent3};")" Align="Align.Center" Class="mb-4">@_errorMessage</MudText>
+
+        <div class="d-flex justify-content-end mt-3">
+            <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Class="mr-2">Save</MudButton>
+
+            <MudButton OnClick="@ToggleOpen" Color="Color.Error">Close</MudButton>
+        </div>
+    </EditForm>
+</MudPopover>
+
+@code {
+    private CustomerModel _newCustomer = new();
+
+    [Inject]
+    private IDialogService _dialogService { get; set; }
+
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
+
+    [Parameter]
+    public bool Open { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
+
+    private string _errorMessage;
+
+    private void OnValidSave()
+    {
+        bool isContactExist = _dbContext.PnContacts.Any(c => c.Email.Equals(_newCustomer.Email));
+
+        if (isContactExist)
+        {
+            _errorMessage = "A contact with this email already exists.";
+            return;
+        }
+
+        _errorMessage = String.Empty;
+
+        var pnContact = new PnContact()
+        {
+            CustomerName = _newCustomer.CustomerName,
+            CustomerWebsite = _newCustomer.CustomerWebsite,
+            CustomerLocation = _newCustomer.CustomerLocation,
+            TableName = "NewCustomer",
+
+            FirstName = _newCustomer.FirstName,
+            LastName = _newCustomer.LastName,
+            Email = _newCustomer.Email,
+            Phone = _newCustomer.PhoneNumber,
+            LeadSource = _newCustomer.LeadSource.ToString(),
+
+            Active = false,
+            UpdateTimeStamp = DateTime.Now,
+        };
+
+        _dbContext.PnContacts.Add(pnContact);
+        int result = _dbContext.SaveChanges();
+
+        if(result > 0)
+        {
+            ClearModel();
+            ToggleOpen();
+
+            _dialogService.ShowMessageBox("Successful Registration", "Congratulations, your registration was successfull! If you have any questions, feel free to reach out to us.", "Ok");
+        }
+        else
+        {
+            _dialogService.ShowMessageBox("Failed Registration", "We're sorry, but there was an issue processing your registration. Please ensure all your information is correct and try again. If the problem persists, contact our support team for assistance.", "Ok");
+        }
+    }
+
+    private void ToggleOpen()
+    {
+        Open = !Open;
+        OpenChanged.InvokeAsync(Open);
+    }
+
+    private void ClearModel()
+    {
+        _newCustomer.CustomerName = String.Empty;
+        _newCustomer.CustomerWebsite = String.Empty;
+        _newCustomer.CustomerLocation = String.Empty;
+        _newCustomer.FirstName = String.Empty;
+        _newCustomer.LastName = String.Empty;
+        _newCustomer.Email = String.Empty;
+        _newCustomer.PhoneNumber = String.Empty;
+        _newCustomer.LeadSource = LeadSource.None;
+    }
+
+    private class CustomerModel
+    {
+        [Required(ErrorMessage = "Customer Name is required")]
+        public string CustomerName { get; set; } = "Arnold Achwarzenegger";
+
+        [Required(ErrorMessage = "Customer website is required")]
+        [Url(ErrorMessage = "Website link is not valid")]
+        public string CustomerWebsite { get; set; } = "https://www.youtube.com/";
+
+        [Required(ErrorMessage = "Customer location is required")]
+        public string CustomerLocation { get; set; } = "Germany";
+
+        [Required(ErrorMessage = "First Name is required")]
+        public string FirstName { get; set; } = "Arnold";
+
+        [Required(ErrorMessage = "Last Name is required")]
+        public string LastName { get; set; } = "Achwarzenegger";
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        public string Email { get; set; } = "arny123@gmail.com";
+
+        [Required(ErrorMessage = "Phone Number is required")]
+        [IsPhoneNumberAttribute(ErrorMessage = "Invalid phone number")]
+        public string PhoneNumber { get; set; } = "+380734281593";
+
+        [LeadSourceRequired]
+        public LeadSource LeadSource { get; set; } = LeadSource.Web;
+    }
+
+    private enum LeadSource
+    {
+        None = -1,
+        Web,
+        Referral
+    }
+
+    private class LeadSourceRequiredAttribute : ValidationAttribute
+    {
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            if (value == null || (LeadSource)value == LeadSource.None)
+            {
+                return new ValidationResult("Lead Source is required.");
+            }
+
+            return ValidationResult.Success;
+        }
+    }
+
+    private class IsPhoneNumberAttribute : ValidationAttribute
+    {
+        private const string PhoneNumberPattern = @"^\+[0-9]{10,14}$";
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            if (value is string number && System.Text.RegularExpressions.Regex.IsMatch(number, PhoneNumberPattern))
+            {
+                return ValidationResult.Success;
+            }
+
+            return new ValidationResult("Invalid phone number format. The correct format is +1234567890123.");
+        }
+    }
+}
