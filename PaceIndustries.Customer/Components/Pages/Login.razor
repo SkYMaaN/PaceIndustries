@@ -140,9 +140,11 @@
             return;
         }
 
+        const string ParentKey = "PREC";
+
         string userName = $"{preCustomerContact.FirstName} {preCustomerContact.LastName}";
 
-        var result = await _authStateProvider.LoginAsPreUser(userName, preCustomerContact.Email, PaceRole.PreCustomer);
+        var result = await _authStateProvider.LoginAsPreUser(ParentKey, userName, preCustomerContact.Email, PaceRole.PreCustomer);
 
         if (result.User.Identity.IsAuthenticated)
         {

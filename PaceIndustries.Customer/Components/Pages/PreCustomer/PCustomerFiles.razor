@@ -1,0 +1,169 @@
+﻿@page "/pcustomer-files"
+
+@attribute [Authorize(Roles = PaceRole.PreCustomer)]
+
+<PageTitle>Customer Files</PageTitle>
+
+<MudPaper Width="100%" Elevation="3" Class="pa-4">
+    <MudStack Direction="Column" Spacing="2">
+        <MudText Typo="Typo.h5">Upload File</MudText>
+        <MudText Typo="Typo.body1">Please upload PDF file.</MudText>
+
+        <MudStack Row>
+            <MudTextField Label="PartName (Max 20 Char)" @bind-Value="_productName" MaxLength="20" />
+
+            <MudFileUpload @ref="_fileUploder" T="IBrowserFile" FilesChanged="UploadFilesAsync" Accept=".pdf">
+                <ActivatorContent>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">Upload File</MudButton>
+                </ActivatorContent>
+            </MudFileUpload>
+        </MudStack>
+
+        <MudText Typo="Typo.h6" Color="Color.Error">@_errorMessage</MudText>
+
+        @if (_preCustomerFiles != null && _preCustomerFiles.Any())
+        {
+            <MudText Typo="@Typo.h6">@_preCustomerFiles.Count() File@(_preCustomerFiles.Count() == 1 ? String.Empty : "s"):</MudText>
+            <MudList T="string">
+                @foreach (var file in _preCustomerFiles)
+                {
+                    <MudListItem Icon="@Icons.Material.Filled.AttachFile">
+                        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                            <span style="margin-right: auto;">
+                                @file.FileName <code>@file.FilePath</code>
+                            </span>
+                            <MudIconButton OnClick="@(() => DeleteFile(file.Id))" Icon="@Icons.Material.Filled.DeleteOutline" />
+                        </div>
+                    </MudListItem>
+                }
+            </MudList>
+        }
+    </MudStack>
+</MudPaper>
+
+@code {
+    private const string SavePath = "C:\\PreCustomerUploadFile";
+
+    private const long MaxFileSize = 5 * 1024 * 1024;
+
+    private const int MaxProductFileCount = 10;
+
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
+
+    [Inject]
+    private CachedUserData _cachedUserData { get; set; }
+
+    private MudFileUpload<IBrowserFile> _fileUploder;
+
+    private List<PCustomerUploadFile> _preCustomerFiles;
+
+    private IBrowserFile _file;
+
+    private string _productName;
+
+    private string _errorMessage;
+
+    protected override void OnInitialized()
+    {
+        _preCustomerFiles = LoadFiles();
+
+        Directory.CreateDirectory(SavePath);
+    }
+
+    private async Task UploadFilesAsync(IBrowserFile file)
+    {
+        if (file == null)
+        {
+            return;
+        }
+
+        if (String.IsNullOrEmpty(_productName))
+        {
+            _errorMessage = "Please, enter product name.";
+            await _fileUploder.ClearAsync();
+            return;
+        }
+
+        if (file.Size > MaxFileSize)
+        {
+            _errorMessage = "The file exceeds the maximum allowed size of 5 megabytes.";
+            await _fileUploder.ClearAsync();
+            return;
+        }
+
+        int productFileCount = _dbContext.PCustomerUploadFiles.AsNoTracking().Count(f => f.ProductName.Equals(_productName) && f.Email.Equals(_cachedUserData.Email) && f.ParentKey.Equals(_cachedUserData.ParentKey));
+
+        if (productFileCount >= MaxProductFileCount)
+        {
+            _errorMessage = $"The files for this product ({_productName}) exceeds the maximum allowed count ({MaxProductFileCount}).";
+            await _fileUploder.ClearAsync();
+            return;
+        }
+
+        string newFileName = $"{_cachedUserData.UserName}_{_productName}_{file.Name}";
+        string filePath = Path.Combine(SavePath, newFileName);
+
+        var customerUploadFile = new PCustomerUploadFile()
+            {
+                Email = _cachedUserData.Email,
+                ParentKey = _cachedUserData.ParentKey,
+                ParentCompanyId = null,
+                FileName = newFileName,
+                ProductName = _productName,
+                FilePath = filePath,
+                CreatedAt = DateTime.Now,
+            };
+
+        try
+        {
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.OpenReadStream(maxAllowedSize: MaxFileSize).CopyToAsync(stream);
+            }
+
+            _dbContext.PCustomerUploadFiles.Add(customerUploadFile);
+
+            if (_dbContext.SaveChanges() > 0)
+            {
+                _preCustomerFiles.Add(customerUploadFile);
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred while saving the file.";
+        }
+
+        _errorMessage = String.Empty;
+        _productName = String.Empty;
+        await _fileUploder.ClearAsync();
+    }
+
+    private void DeleteFile(int fileId)
+    {
+        _errorMessage = String.Empty;
+
+        var file = _dbContext.PCustomerUploadFiles.FirstOrDefault(c => c.Id.Equals(fileId));
+
+        if (file == null)
+        {
+            _errorMessage = "File not exist.";
+            return;
+        }
+
+        _dbContext.PCustomerUploadFiles.Remove(file);
+
+        if (_dbContext.SaveChanges() > 0)
+        {
+            _preCustomerFiles.Remove(_preCustomerFiles.First(f => f.Id.Equals(file.Id)));
+        }
+    }
+
+    private List<PCustomerUploadFile> LoadFiles()
+    {
+        var files = _dbContext.PCustomerUploadFiles.AsNoTracking().Where(f => f.Email.Equals(_cachedUserData.Email) && f.ParentKey.Equals(_cachedUserData.ParentKey)).ToList();
+
+        return files;
+    }
+}
+

@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using PaceIndustries.Shared.Data.Entities;
 
 namespace PaceIndustries.Shared.Data;
@@ -31,6 +33,10 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<OrderHeader> OrderHeaders { get; set; }
 
     public virtual DbSet<OrderItem> OrderItems { get; set; }
+
+    public virtual DbSet<OrdersFull> OrdersFulls { get; set; }
+
+    public virtual DbSet<PCustomerUploadFile> PCustomerUploadFiles { get; set; }
 
     public virtual DbSet<PSupplierAck> PSupplierAcks { get; set; }
 
@@ -72,12 +78,13 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<Supplier> Suppliers { get; set; }
 
+    public virtual DbSet<SupplierScoreHistory> SupplierScoreHistories { get; set; }
+
     public virtual DbSet<SupplierX> SupplierXes { get; set; }
 
     public virtual DbSet<SupplierXdailyParent> SupplierXdailyParents { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Apopen>(entity =>
@@ -283,6 +290,16 @@ public partial class ApplicationDbContext : DbContext
                 .HasForeignKey(d => new { d.ProductId, d.CompanyId })
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("con_fk_orderitem_product");
+        });
+
+        modelBuilder.Entity<OrdersFull>(entity =>
+        {
+            entity.ToView("OrdersFull");
+        });
+
+        modelBuilder.Entity<PCustomerUploadFile>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__pCustome__3213E83F42B00016");
         });
 
         modelBuilder.Entity<PSupplierAck>(entity =>

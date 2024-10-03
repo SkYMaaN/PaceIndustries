@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace PaceIndustries.Shared.Data.Entities;
 
-[Table("pSupplierUploadFile")]
-public partial class PSupplierUploadFile
+[Table("pCustomerUploadFile")]
+public partial class PCustomerUploadFile
 {
     [Key]
     [Column("id")]
@@ -15,26 +15,24 @@ public partial class PSupplierUploadFile
 
     [Column("file_name")]
     [StringLength(255)]
-    [Unicode(false)]
     public string? FileName { get; set; }
 
     [Column("file_path")]
-    [StringLength(1000)]
-    [Unicode(false)]
+    [StringLength(255)]
     public string? FilePath { get; set; }
 
-    [StringLength(100)]
-    [Unicode(false)]
+    [StringLength(255)]
     public string Email { get; set; } = null!;
 
-    [StringLength(100)]
-    [Unicode(false)]
+    [StringLength(255)]
     public string? ParentKey { get; set; }
 
-    [StringLength(100)]
-    [Unicode(false)]
-    public string? ParentCompanyId { get; set; }
+    public int? ParentCompanyId { get; set; }
 
     [Column("created_at", TypeName = "datetime")]
     public DateTime? CreatedAt { get; set; }
+
+    [StringLength(255)]
+    [Unicode(false)]
+    public string? ProductName { get; set; }
 }

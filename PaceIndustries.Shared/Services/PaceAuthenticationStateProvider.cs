@@ -10,7 +10,6 @@ namespace PaceIndustries.Shared.Services
         /// <summary>
         /// Contains information about authenticated user ( supplier, customer, administrator )
         /// </summary>
-        /// <remarks>Do not use with Pre-Users!!!</remarks>
         private readonly CachedUserData _cachedUserData;
 
         private ClaimsPrincipal CurrentUser { get; set; }
@@ -44,9 +43,16 @@ namespace PaceIndustries.Shared.Services
             return task;
         }
 
-        public Task<AuthenticationState> LoginAsPreUser(string username, string email, string role)
+        public Task<AuthenticationState> LoginAsPreUser(string parentKey, string username, string email, string role)
         {
-            CurrentUser = CreatePreUser(username, email, role);
+            _cachedUserData.ParentKey = parentKey;
+            _cachedUserData.ParentCompanyId = String.Empty;
+            
+            _cachedUserData.UserName = username;
+            _cachedUserData.Email = email;
+            _cachedUserData.Role = role;
+
+            CurrentUser = CreatePreUser(parentKey, username, email, role);
 
             var task = GetAuthenticationStateAsync();
             NotifyAuthenticationStateChanged(task);
@@ -73,7 +79,7 @@ namespace PaceIndustries.Shared.Services
         {
             var identity = new ClaimsIdentity(new[]
             {
-                new Claim(ClaimTypes. Sid, id),
+                new Claim(ClaimTypes.Sid, id),
                 new Claim(ClaimTypes.Name, username),
                 new Claim(ClaimTypes.Email, email),
                 new Claim(ClaimTypes.Role, role)
@@ -83,10 +89,11 @@ namespace PaceIndustries.Shared.Services
             return new ClaimsPrincipal(identity);
         }
 
-        private ClaimsPrincipal CreatePreUser(string username, string email, string role)
+        private ClaimsPrincipal CreatePreUser(string parentKey, string username, string email, string role)
         {
             var identity = new ClaimsIdentity(new[]
             {
+                new Claim(ClaimTypes.Sid, parentKey),
                 new Claim(ClaimTypes.Name, username),
                 new Claim(ClaimTypes.Email, email),
                 new Claim(ClaimTypes.Role, role)
