@@ -1,4 +1,6 @@
-﻿<MudPopover Open="@Open" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter">
+﻿@using System.Text.RegularExpressions
+
+<MudPopover Open="@Open" Fixed="true" Class="px-4 pt-4" AnchorOrigin="Origin.TopCenter">
     <MudImage Src="Images/Logos/Logo.png" Style="width: 300px;" Class="rounded-lg" />
     <MudText Typo="Typo.h5">New Customer</MudText>
 
@@ -125,7 +127,6 @@
         public string CustomerName { get; set; } = "Arnold Achwarzenegger";
 
         [Required(ErrorMessage = "Customer website is required")]
-        [Url(ErrorMessage = "Website link is not valid")]
         public string CustomerWebsite { get; set; } = "https://www.youtube.com/";
 
         [Required(ErrorMessage = "Customer location is required")]
@@ -143,7 +144,7 @@
 
         [Required(ErrorMessage = "Phone Number is required")]
         [IsPhoneNumberAttribute(ErrorMessage = "Invalid phone number")]
-        public string PhoneNumber { get; set; } = "+380734281593";
+        public string PhoneNumber { get; set; } = "380734281593";
 
         [LeadSourceRequired]
         public LeadSource LeadSource { get; set; } = LeadSource.Web;
@@ -171,16 +172,16 @@
 
     private class IsPhoneNumberAttribute : ValidationAttribute
     {
-        private const string PhoneNumberPattern = @"^\+[0-9]{10,14}$";
+        private const string PhoneNumberPattern = @"^[0-9]{10,14}$";
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            if (value is string number && System.Text.RegularExpressions.Regex.IsMatch(number, PhoneNumberPattern))
+            if (value is string number && Regex.IsMatch(number, PhoneNumberPattern))
             {
                 return ValidationResult.Success;
             }
 
-            return new ValidationResult("Invalid phone number format. The correct format is +1234567890123.");
+            return new ValidationResult("Invalid phone number format. The correct format is 1234567890123.");
         }
     }
 }

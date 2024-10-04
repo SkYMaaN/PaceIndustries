@@ -26,6 +26,21 @@ namespace PaceIndustries.Shared.Services
             return task;
         }
 
+        public Task<AuthenticationState> LoginAsAdministrator(string id, string username, string email, string role)
+        {
+            _cachedUserData.ParentKey = id;
+
+            _cachedUserData.UserName = username;
+            _cachedUserData.Email = email;
+            _cachedUserData.Role = role;
+
+            CurrentUser = CreateUser(id, username, email, role);
+
+            var task = GetAuthenticationStateAsync();
+            NotifyAuthenticationStateChanged(task);
+            return task;
+        }
+
         public Task<AuthenticationState> LoginAsUser(string parentKey, string parentCompanyId, List<Contact> userContacts, string username, string email, string role)
         {
             _cachedUserData.ParentKey = parentKey;

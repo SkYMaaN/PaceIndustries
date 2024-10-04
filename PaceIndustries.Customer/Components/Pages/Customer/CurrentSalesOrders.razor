@@ -9,7 +9,7 @@
         <PropertyColumn Property="x => x.CompanyId" Title="Company ID" />
         <PropertyColumn Property="x => x.ProductId" Title="Product ID" Grouping>
             <GroupTemplate>
-                <span style="font-weight:bold">Orders text [@context.Grouping.Count()] : </span> @GetProductInfo(@context.Grouping.Key.ToString())
+                <span style="font-weight:bold">Orders[@context.Grouping.Count()] : </span> @GetProductInfo(@context.Grouping.Key.ToString())
             </GroupTemplate>
         </PropertyColumn>
         <PropertyColumn Property="x => x.CustomerId" Title="Customer ID" />

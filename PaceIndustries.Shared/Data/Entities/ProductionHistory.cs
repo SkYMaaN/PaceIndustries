@@ -9,7 +9,7 @@ namespace PaceIndustries.Shared.Data.Entities;
 [Table("ProductionHistory")]
 public partial class ProductionHistory
 {
-    public long Id { get; set; }
+    public int Id { get; set; }
 
     [StringLength(4)]
     [Unicode(false)]
@@ -624,8 +624,131 @@ public partial class ProductionHistory
     [Column(TypeName = "decimal(10, 2)")]
     public decimal? StdHours { get; set; }
 
+    [Column(TypeName = "decimal(20, 5)")]
+    public decimal? StdLabr { get; set; }
+
+    [StringLength(10)]
+    [Unicode(false)]
+    public string? StdOperation { get; set; }
+
+    public int? StdRtgseq { get; set; }
+
+    [Column("StdSeqID")]
+    public int? StdSeqId { get; set; }
+
+    [Column(TypeName = "decimal(20, 5)")]
+    public decimal? StdVovh { get; set; }
+
+    [Column(TypeName = "decimal(18, 5)")]
+    public decimal? StdWipCost { get; set; }
+
+    [Column(TypeName = "decimal(5, 2)")]
+    public decimal? StopTime { get; set; }
+
+    public int? SumPeriod { get; set; }
+
+    public int? SumYear { get; set; }
+
+    [Column(TypeName = "decimal(16, 5)")]
+    public decimal? TareWgt { get; set; }
+
+    public bool? Temp { get; set; }
+
+    [Column("TimeCardID")]
+    public int? TimeCardId { get; set; }
+
+    [Column(TypeName = "datetime")]
+    public DateTime? TimeSlotDate { get; set; }
+
+    [Column("TimeSlotHR")]
+    public int? TimeSlotHr { get; set; }
+
+    [Column("TimeSlotTR")]
+    public int? TimeSlotTr { get; set; }
+
+    [StringLength(22)]
+    [Unicode(false)]
+    public string? Tool { get; set; }
+
+    [StringLength(25)]
+    [Unicode(false)]
+    public string? Toserialnumber { get; set; }
+
+    public int? TotalNumberon { get; set; }
+
+    public int? Totalparts { get; set; }
+
+    [Column(TypeName = "decimal(16, 5)")]
+    public decimal? Totalwgt { get; set; }
+
+    public int? ToTrackingnumber { get; set; }
+
+    [Column("TPCumShip")]
+    public int? TpcumShip { get; set; }
+
+    [StringLength(2)]
+    [Unicode(false)]
+    public string? Transcode { get; set; }
+
+    [StringLength(1)]
+    [Unicode(false)]
+    public string? ValueAt { get; set; }
+
+    public bool? Verified { get; set; }
+
+    public bool? Void { get; set; }
+
+    [Column("WebServiceIDPost")]
+    [StringLength(25)]
+    [Unicode(false)]
+    public string? WebServiceIdpost { get; set; }
+
+    [Column("WebServiceIDPostOff")]
+    [StringLength(25)]
+    [Unicode(false)]
+    public string? WebServiceIdpostOff { get; set; }
+
+    [Column("WebServiceIDPostResults")]
+    [StringLength(200)]
+    [Unicode(false)]
+    public string? WebServiceIdpostResults { get; set; }
+
+    [Column("WebServiceIDPostResultsOff")]
+    [StringLength(200)]
+    [Unicode(false)]
+    public string? WebServiceIdpostResultsOff { get; set; }
+
+    [Column("WebServiceIDPre")]
+    [StringLength(25)]
+    [Unicode(false)]
+    public string? WebServiceIdpre { get; set; }
+
+    [Column("WebServiceIDPreOff")]
+    [StringLength(25)]
+    [Unicode(false)]
+    public string? WebServiceIdpreOff { get; set; }
+
+    [Column("WebServiceIDPreResults")]
+    [StringLength(200)]
+    [Unicode(false)]
+    public string? WebServiceIdpreResults { get; set; }
+
+    [Column("WebServiceIDPreResultsOff")]
+    [StringLength(200)]
+    [Unicode(false)]
+    public string? WebServiceIdpreResultsOff { get; set; }
+
+    [StringLength(3)]
+    [Unicode(false)]
+    public string? Workcenter { get; set; }
+
+    public int? WorkEffqty { get; set; }
+
+    [Column("WriteSH")]
+    public bool? WriteSh { get; set; }
+
     [Key]
-    public long OdyUniqueId { get; set; }
+    public int OdyUniqueId { get; set; }
 
     [Column(TypeName = "datetime")]
     public DateTime UpdateTimeStamp { get; set; }

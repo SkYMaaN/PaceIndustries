@@ -22,9 +22,9 @@ public partial class PaContact
 
     [StringLength(255)]
     [Unicode(false)]
-    public string? Email { get; set; }
+    public string Email { get; set; } = null!;
 
-    public bool? Active { get; set; }
+    public bool Active { get; set; }
 
     [Column(TypeName = "datetime")]
     public DateTime? UpdateTimeStamp { get; set; }

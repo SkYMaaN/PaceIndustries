@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using PaceIndustries.Shared.Data.Entities;
 using Microsoft.EntityFrameworkCore;
-using PaceIndustries.Shared.Data.Entities;
 
 namespace PaceIndustries.Shared.Data;
 
@@ -17,6 +15,8 @@ public partial class ApplicationDbContext : DbContext
     }
 
     public virtual DbSet<Apopen> Apopens { get; set; }
+
+    public virtual DbSet<Calendar> Calendars { get; set; }
 
     public virtual DbSet<CompanyAddress> CompanyAddresses { get; set; }
 
@@ -66,6 +66,8 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<Pw> Pws { get; set; }
 
+    public virtual DbSet<QwsOpportunityList> QwsOpportunityLists { get; set; }
+
     public virtual DbSet<ReqDate> ReqDates { get; set; }
 
     public virtual DbSet<ReqHdr> ReqHdrs { get; set; }
@@ -108,6 +110,11 @@ public partial class ApplicationDbContext : DbContext
                 .HasForeignKey(d => new { d.SupplierId, d.CompanyId })
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("con_fk_apopen_supplier");
+        });
+
+        modelBuilder.Entity<Calendar>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Calendar__3214EC07428746CB");
         });
 
         modelBuilder.Entity<CompanyAddress>(entity =>
@@ -452,7 +459,7 @@ public partial class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<ProductionHistory>(entity =>
         {
-            entity.HasKey(e => e.OdyUniqueId).HasName("PK__Producti__CB1247698AEA667C");
+            entity.HasKey(e => e.OdyUniqueId).HasName("PK__Producti__CB124769E6479C30");
 
             entity.ToTable("ProductionHistory", tb => tb.HasTrigger("TRG_ProductionHistory_UpdateDate"));
 
@@ -481,13 +488,16 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.SerialLevel).IsFixedLength();
             entity.Property(e => e.Shift).IsFixedLength();
             entity.Property(e => e.StageMethod).IsFixedLength();
+            entity.Property(e => e.Transcode).IsFixedLength();
             entity.Property(e => e.UpdateTimeStamp).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.ValueAt).IsFixedLength();
+            entity.Property(e => e.Workcenter).IsFixedLength();
 
             entity.HasOne(d => d.Company).WithMany(p => p.ProductionHistories)
                 .HasPrincipalKey(p => p.CompanyId)
                 .HasForeignKey(d => d.CompanyId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Productio__Compa__78B651CF");
+                .HasConstraintName("FK__Productio__Compa__1BFF8E0C");
 
             entity.HasOne(d => d.ProductNavigation).WithMany(p => p.ProductionHistories)
                 .HasPrincipalKey(p => new { p.ProductId, p.CompanyId })
@@ -502,6 +512,13 @@ public partial class ApplicationDbContext : DbContext
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(getdate())");
+        });
+
+        modelBuilder.Entity<QwsOpportunityList>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__qwsOppor__3214EC277AF0D4CF");
+
+            entity.Property(e => e.RowId).ValueGeneratedOnAdd();
         });
 
         modelBuilder.Entity<ReqDate>(entity =>
