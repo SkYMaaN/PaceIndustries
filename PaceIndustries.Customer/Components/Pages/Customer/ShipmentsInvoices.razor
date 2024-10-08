@@ -7,7 +7,11 @@
 <MudDataGrid Items="@_salesHistoryDtls" RowsPerPage="20" Height="88vh" ReadOnly="true" EditMode="@DataGridEditMode.Cell" Groupable="true" Hover="true" Bordered="true" Striped="true" Dense="true">
     <Columns>
         <PropertyColumn Property="x => x.CompanyId" Title="Company ID" />
-        <PropertyColumn Property="x => x.ProductId" Title="Product ID" />
+        <PropertyColumn Property="x => x.ProductId" Title="Product ID" Grouping>
+            <GroupTemplate>
+                <span style="font-weight:bold">Invoices[@context.Grouping.Count()] : </span> @GetProductInfo(@context.Grouping.Key.ToString())
+            </GroupTemplate>
+        </PropertyColumn>
         <PropertyColumn Property="x => x.CustomerId" Title="Customer ID" />
         <PropertyColumn Property="x => x.ShipTo" Title="Ship To" />
         <PropertyColumn Property="x => x.Period" Title="Period" />
@@ -46,8 +50,15 @@
 
         periods.RemoveAll(p => p < 1 || p > 12);
 
-        var result = _dbContext.SalesHistoryDtls.AsNoTracking().Where(s => customerIds.Contains(s.CustomerId) && s.Year.Equals(DateTime.Now.Year) && periods.Contains(s.Period)).ToList();
+        var result = _dbContext.SalesHistoryDtls.AsNoTracking().Include(s => s.Product).Where(s => customerIds.Contains(s.CustomerId) && s.Year.Equals(DateTime.Now.Year) && periods.Contains(s.Period)).ToList();
 
         return result;
+    }
+
+    private string GetProductInfo(string productId)
+    {
+        var product = _salesHistoryDtls.FirstOrDefault(p => p.ProductId.Equals(productId))?.Product;
+
+        return product == null ? String.Empty : $"{product.CustPart} {product.Description}";
     }
 }
