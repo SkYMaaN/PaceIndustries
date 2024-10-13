@@ -12,10 +12,25 @@
         <HierarchyColumn />
         <PropertyColumn Property="x => x.Ponumber" Title="PO Number" />
         <PropertyColumn Property="x => x.PoDate" Title="PO Date" />
+        <PropertyColumn Property="x=>x.CompanyId" Title="Company Id" />
         <PropertyColumn Property="x => x.PurchAgent" Title="Purchasing Agent" />
         <PropertyColumn Property="x => x.CurrCode" Title="Currency Code" />
         <PropertyColumn Property="x => x.Termcode" Title="Terms Code" />
-        <PropertyColumn Property="x => x.Ackstatus" Title="Acknowledgement Status" />
+        <TemplateColumn>
+            <HeaderTemplate>
+                <MudText Style="font-weight: 500;">Acknowledgement Status</MudText>
+            </HeaderTemplate>
+            <CellTemplate>
+                <MudStack Row>
+                    <MudText>@context.Item.Ackstatus</MudText>
+                    <MudSpacer />
+                    @if(context.Item.Ackstatus.Equals("N", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.CheckBoxOutlineBlank" OnClick="@(() => UpdateAckStatus(context.Item))" />
+                    }
+                </MudStack>
+            </CellTemplate>
+        </TemplateColumn>
         <PropertyColumn Property="x => x.POClosed" Title="PO Closed" />
         <PropertyColumn Property="x => x.POHeaderUpdateTimeStamp" Title="Update TimeStamp" />
     </Columns>
@@ -86,11 +101,14 @@
 </MudDataGrid>
 
 @code {
-    [Inject]
-    private ApplicationDbContext _dbContext { get; set; }
+        [Inject]
+        private ISnackbar _snackbar { get; set; }
 
-    [Inject]
-    private CachedUserData _cachedUserData { get; set; }
+        [Inject]
+        private ApplicationDbContext _dbContext { get; set; }
+
+        [Inject]
+        private CachedUserData _cachedUserData { get; set; }
 
     private List<PurchaseOrderDetails> _orders = new();
 
@@ -109,8 +127,10 @@
             .Where(ph => (supplierIds.Contains(ph.SupplierId) && companyIds.Contains(ph.CompanyId)) && !ph.Closed && ph.PoDate > DateTime.Now.AddDays(-90))
             .Select(ph => new PurchaseOrderDetails()
                 {
+                    OdyUniqueId = ph.OdyUniqueId,
                     Ponumber = ph.Ponumber,
                     PoDate = ph.PoDate,
+                    CompanyId = ph.CompanyId,
                     PurchAgent = ph.PurchAgent,
                     CurrCode = ph.CurrCode,
                     Termcode = ph.Termcode,
@@ -145,5 +165,31 @@
                 }).ToList();
 
         return results;
+    }
+    private void UpdateAckStatus(PurchaseOrderDetails pod)
+    {
+        var pPoheaderTransfer = new PPoheaderTransfer()
+            {
+                CompanyId = pod.CompanyId,
+                SupplierId = _cachedUserData.ParentKey,
+                Ponumber = pod.Ponumber,
+                PurchAgent = pod.PurchAgent,
+                Closed = pod.POClosed,
+                PoDate = pod.PoDate,
+                CurrCode = pod.CurrCode,
+                Termcode = pod.Termcode,
+                Ackstatus = pod.Ackstatus,
+                OdyUniqueId = pod.OdyUniqueId,
+                UpdateTimeStamp = pod.POHeaderUpdateTimeStamp,
+            };
+
+        _dbContext.PPoheaderTransfers.Add(pPoheaderTransfer);
+
+        if(_dbContext.SaveChanges() > 0)
+        {
+            _orders.First(o => o.Ponumber.Equals(pod.Ponumber)).Ackstatus = "Y";
+
+            _snackbar.Add("Sent for processing.");
+        }  
     }
 }

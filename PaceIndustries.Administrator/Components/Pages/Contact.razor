@@ -79,17 +79,15 @@
 
         _dialogService.ShowMessageBox("Password Updated Successfully", "The user's password has been successfully updated. A email containing their updated password has been sent to their email address.", "Ok");
 
-        SendPasswordEmail(updatedPW.Email, updatedPW.PasswordHash);
+        _emailService.SendPasswordEmailAsync(updatedPW.Email, GetUserNameByEmail(updatedPW.Email), updatedPW.PasswordHash);
     }
 
-    private void SendPasswordEmail(string toEmail, string password)
+    private string GetUserNameByEmail(string email)
     {
-        const string Subject = "Important: Your Password Has Been Reset for Security Reasons";
+        var contact = _dbContext.Contacts.AsNoTracking().FirstOrDefault(c => c.Email.Equals(email));
+        var pnContact = _dbContext.PnContacts.AsNoTracking().FirstOrDefault(c => c.Email.Equals(email));
 
-        var contact = _dbContext.Contacts.AsNoTracking().FirstOrDefault(c => c.Email.Equals(toEmail));
-        var pnContact = _dbContext.PnContacts.AsNoTracking().FirstOrDefault(c => c.Email.Equals(toEmail));
-
-        string userName = String.Empty;
+        string userName = "Dear User";
 
         if (contact != null)
         {
@@ -97,29 +95,10 @@
         }
         else if (pnContact != null)
         {
+
             userName = $"{pnContact.FirstName} {pnContact.LastName}";
         }
-        else
-        {
-            return;
-        }
 
-        string body = $@"<html>
-                      <body>
-                        <h2>Dear {userName},</h2>
-                        <p>We hope this message finds you well.</p>
-                        <p>Visit <a href='https://paceind.com'>Paceind Portal</a>
-                        </p>
-                        <p>Please use new, secure password: <strong>{password}</strong>
-                        </p>
-                        <p>If you need help or have any questions, please don't hesitate to contact our support team at <a href='mailto:helpportal@paceind.com'>helpportal@paceind.com</a>
-                        </p>
-                        <br>
-                        <p>Thank you for your cooperation.</p>
-                        <p>Best regards, <br>Pace Industries <br>Customer Support Team </p>
-                      </body>
-                    </html>";
-
-        _emailService.SendEmailAsync(toEmail, Subject, body, true);
+        return userName;
     }
 }

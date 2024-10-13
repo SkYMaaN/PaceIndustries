@@ -10,38 +10,37 @@
 
 <RegistrationPopover Open="@_registrationPopoverOpen" OpenChanged="@(value => _registrationPopoverOpen = value)" />
 
-<div class="d-flex justify-content-center align-items-center" style="height:100vh;">
-    <MudCard Style="width: 300px;">
-        <MudCardContent Class="pa-4">
-            <MudImage Src="Images/Logos/Logo.png" Style="width: 100%;" Class="rounded-lg" />
+<MudCard Style="width: 300px;">
+    <MudCardContent Class="pa-4">
+        <MudImage Src="Images/Logos/Logo.png" Style="width: 100%;" Class="rounded-lg" />
 
-            <MudText Typo="Typo.h5" Style="@($"color:{Colors.Red.Accent3};")" Align="Align.Center" Class="mb-4">Customer Portal</MudText>
+        <MudText Typo="Typo.h5" Style="@($"color:{Colors.Red.Accent3};")" Align="Align.Center" Class="mb-4">Customer Portal</MudText>
 
-            <MudText Style="@($"color:{Colors.Red.Accent3};")" Align="Align.Center" Class="mb-4">@_errorMessage</MudText>
+        <MudText Style="@($"color:{Colors.Red.Accent3};")" Align="Align.Center" Class="mb-4">@_errorMessage</MudText>
 
-            <EditForm Model="@_model" OnValidSubmit="OnValidSubmit" FormName="CustomerLoginForm">
-                <DataAnnotationsValidator />
+        <EditForm Model="@_model" OnValidSubmit="OnValidSubmit" FormName="CustomerLoginForm">
+            <DataAnnotationsValidator />
 
-                <MudTextField Label="Username - Email" HelperText="Email of your account"
-                              @bind-Value="_model.Email" For="@(() => _model.Email)"
-                              FullWidth="true" Margin="Margin.Dense" />
+            <MudTextField Label="Username - Email" HelperText="Email of your account"
+                          @bind-Value="_model.Email" For="@(() => _model.Email)"
+                          FullWidth="true" Margin="Margin.Dense" />
 
-                <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
-                              @bind-Value="_model.Password" For="@(() => _model.Password)" InputType="InputType.Password"
-                              FullWidth="true" Margin="Margin.Dense" />
+            <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                          @bind-Value="_model.Password" For="@(() => _model.Password)" InputType="InputType.Password"
+                          FullWidth="true" Margin="Margin.Dense" />
 
-                <div style="display: flex; justify-content: space-between; margin-top: 16px;">
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Style="@($"background-color:{Colors.Gray.Lighten3}; color:black;")">Sign In</MudButton>
+            <MudButton FullWidth ButtonType="ButtonType.Submit" Variant="Variant.Filled" Style="@($"background-color:{Colors.Gray.Lighten3}; color:black;")">Sign In</MudButton>
+        </EditForm>
+    </MudCardContent>
+</MudCard>
 
-                    <MudButton OnClick="@(() => {_registrationPopoverOpen = true;})" Variant="Variant.Filled" Style="@($"background-color:{Colors.Gray.Lighten3}; color:black;")">New</MudButton>
+<div style="margin-left: 30px;">
+    <MudStack>
+        <MudText Style="cursor:pointer; color:black; margin-top:10px;" @onclick="@(() => {_registrationPopoverOpen = true;})">Set Up Online Access - RFQ</MudText>
 
-                    <MudButton OnClick="@(() => {_helpPopoverOpen = true;})" Variant="Variant.Filled" Style="@($"background-color:{Colors.Gray.Lighten3}; color:black;")">Help</MudButton>
-                </div>
-            </EditForm>
-        </MudCardContent>
-    </MudCard>
+        <MudText Style="cursor:pointer; opacity: 0.65; color:black;" @onclick="@(() => {_helpPopoverOpen = true;})">Forgot Username and or Password?</MudText>
+    </MudStack>
 </div>
-
 
 @code {
     private const string ErrorMessage = "Incorrect username or password \nand or incorrect account \nplease retry or use the help option";

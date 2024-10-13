@@ -1,0 +1,197 @@
+﻿@page "/supplier-kpis"
+
+@attribute [Authorize]
+
+<PageTitle>Supplier KPIs</PageTitle>
+
+<MudCard Style="margin-top: 20px;">
+    <MudText Typo="Typo.h5" Align="Align.Center" Style="background-color: black; opacity: 0.65; color: white;">@_lastSupplierScoreHistory?.SupplierId - @_lastSupplierScoreHistory?.Name</MudText>
+</MudCard>
+
+<div style="display: flex; justify-content: center; align-items: center;">
+    <MudCard Style="width: 90vh; margin-top: 20px;">
+        <MudText Typo="Typo.h5" Align="Align.Center" Style="background-color: black; opacity: 0.65; color: white;">Current Month KPIs</MudText>
+    </MudCard>
+</div>
+
+@if (_lastSupplierScoreHistory != null)
+{
+    <MudPaper Class="pa-16 ma-2" Elevation="3">
+        <MudGrid>
+            <MudItem xs="2">
+                <MudPaper Class="pa-4 text-center" Style="margin-top: 20px; background-color: black; opacity: 0.7; color: white;">
+                    <MudText Typo="Typo.body2">Target: 90</MudText>
+                    <MudText Typo="Typo.h3">@(_lastSupplierScoreHistory?.PaymentTerms != null ? _lastSupplierScoreHistory.PaymentTerms : 0)</MudText>
+                    <MudText Typo="Typo.body1">Payment Terms</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="2">
+                <MudPaper Class="pa-4 text-center" Style="margin-top: 20px; background-color: black; opacity: 0.7; color: white;">
+                    <MudText Typo="Typo.body2">Target: 90%</MudText>
+                    <MudText Typo="Typo.h3">@(_lastSupplierScoreHistory?.Otd != null ? @_lastSupplierScoreHistory.Otd : "No Data")</MudText>
+                    <MudText Typo="Typo.body1">OTD</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="1">
+                <MudPaper Class="pa-4 text-center" Style="margin-top: 20px; background-color: black; opacity: 0.7; color: white;">
+                    <MudText Typo="Typo.body2">Target: 0</MudText>
+                    <MudText Typo="Typo.h3">0</MudText>
+                    <MudText Typo="Typo.body1">YTD PPM</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="2">
+                <MudPaper Class="pa-4 text-center" Style="margin-top: 20px; background-color: black; opacity: 0.7; color: white;">
+                    <MudText Typo="Typo.body2">Target: 0</MudText>
+                    <MudText Typo="Typo.h3">@(_lastSupplierScoreHistory?.OpenCarCi != null ? _lastSupplierScoreHistory.OpenCarCi : "No Data")</MudText>
+                    <MudText Typo="Typo.body1">Open CAR</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="2">
+                <MudPaper Class="pa-4 text-center" Style="margin-top: 20px; background-color: black; opacity: 0.7; color: white;">
+                    <MudText Typo="Typo.body2">Target: 3%</MudText>
+                    <MudText Typo="Typo.h3">@(_lastSupplierScoreHistory?.CostSavings != null ? _lastSupplierScoreHistory.CostSavings : "No Data")</MudText>
+                    <MudText Typo="Typo.body1">Savings Percent</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="2">
+                <MudPaper Class="pa-4 text-center" Style="margin-top: 20px; background-color: black; opacity: 0.7; color: white;">
+                    <MudText Typo="Typo.body2">Target: 5</MudText>
+                    <MudText Typo="Typo.h3">@(_lastSupplierScoreHistory?.ComplianceResponse != null ? _lastSupplierScoreHistory.ComplianceResponse : 0)</MudText>
+                    <MudText Typo="Typo.body1">Compliance Response</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="1">
+                <MudPaper Class="pa-4 text-center" Style="margin-top: 20px; background-color: black; opacity: 0.7; color: white;">
+                    <MudText Typo="Typo.body2">Target</MudText>
+                    <MudText Typo="Typo.h3">@(_lastSupplierScoreHistory?.Rating != null ? _lastSupplierScoreHistory.Rating : "No Data")</MudText>
+                    <MudText Typo="Typo.body1">Rating</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+}
+
+@if (_series != null && _series.Any())
+{
+    <MudPaper Class="pa-16 ma-2" Elevation="3">
+        <MudChart Style="margin-top: 20px;" ChartType="ChartType.Line" ChartSeries="@_series" XAxisLabels="@_XAxisLabels" Width="100%" Height="400px" ChartOptions="@_options" />
+    </MudPaper>
+}
+
+@if (_supplierScoreHistories != null && _supplierScoreHistories.Any())
+{
+    <MudDataGrid Style="margin-top: 20px;" Items="@_supplierScoreHistories" RowsPerPage="12" ReadOnly="true" EditMode="@DataGridEditMode.Cell" Hover="true" Bordered="true" Striped="true" Dense="true"
+    RowStyleFunc="_rowStyleFunc" Elevation="3">
+
+        <Columns>
+            <PropertyColumn Property="x => x.Month" Title="Month" Format="MMM yyyy" />
+
+            <PropertyColumn Property="x => x.MasterCommodity" Title="Master Commodity" />
+
+            <PropertyColumn Property="x => x.PaymentTerms" Title="Payment Terms" />
+
+            <PropertyColumn Property="x => x.Otd" Title="OTD" />
+
+            <PropertyColumn Property="x => x.CostSavings" Title="Cost Savings" />
+
+            <PropertyColumn Property="x => x.Score" Title="Score" />
+
+            <PropertyColumn Property="x => x.Rating" Title="Rating" />
+
+            <PropertyColumn Property="x => x.OpenCarCi" Title="Open CAR" />
+
+            <PropertyColumn Property="x => x.ComplianceResponse" Title="Compliance Response" />
+        </Columns>
+
+        <PagerContent>
+            <MudDataGridPager T="SupplierScoreHistory" />
+        </PagerContent>
+    </MudDataGrid>
+}
+
+@code {
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
+
+    [Inject]
+    private CachedUserData _cachedUserData { get; set; }
+
+    private List<SupplierScoreHistory> _supplierScoreHistories;
+
+    private SupplierScoreHistory? _lastSupplierScoreHistory;
+
+    private ChartOptions _options = new ChartOptions()
+    {
+        YAxisTicks = 2,
+    };
+
+    private string[] _XAxisLabels;
+
+    private List<ChartSeries> _series = new List<ChartSeries>();
+
+    private Func<SupplierScoreHistory, int, string> _rowStyleFunc => (x, index) =>
+    {
+        return index % 2 == 0 ? "background-color: lightgray;" : String.Empty;
+    };
+
+    protected override void OnInitialized()
+    {
+        _supplierScoreHistories = LoadScoreHistories();
+
+        _lastSupplierScoreHistory = _supplierScoreHistories.FirstOrDefault();
+
+        _XAxisLabels = GetXAxisLabels();
+
+        var seriesData = _supplierScoreHistories.Select(s => new ChartSeries() 
+        { 
+            Name = s.Name, 
+            Data = new double[] { s.Score.Value },
+        }).ToList();
+
+        _series.AddRange(seriesData);
+    }
+
+    private List<SupplierScoreHistory> LoadScoreHistories()
+    {
+        var supplierIds = _cachedUserData.Contacts.Select(c => c.ParentKey).ToList();
+
+        DateTime twelveMonthsAgo = DateTime.Now.AddMonths(-12);
+
+        var result = _dbContext.SupplierScoreHistories.AsNoTracking().Where(s => supplierIds.Contains(s.SupplierId) && s.Month >= twelveMonthsAgo).ToList();
+
+        return result;
+    }
+
+    private string[] GetXAxisLabels()
+    {
+        string[] monthNames = new string[12];
+        DateTime currentDate = DateTime.Now;
+
+        for (int i = 0; i < 12; i++)
+        {
+            DateTime month = currentDate.AddMonths(-i);
+            string monthName = month.ToString("MMM", System.Globalization.CultureInfo.InvariantCulture);
+            monthNames[i] = monthName;
+        }
+
+        monthNames.Reverse();
+        return monthNames;
+    }
+
+    private Color GetRatingColor(string? rating)
+    {
+        return rating switch
+        {
+            "A" => Color.Success,
+            "B" => Color.Warning,
+            "C" => Color.Error,
+            _ => Color.Default,
+        };
+    }
+}

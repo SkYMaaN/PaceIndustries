@@ -38,6 +38,8 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<PCustomerUploadFile> PCustomerUploadFiles { get; set; }
 
+    public virtual DbSet<PPoheaderTransfer> PPoheaderTransfers { get; set; }
+
     public virtual DbSet<PSupplierAck> PSupplierAcks { get; set; }
 
     public virtual DbSet<PSupplierUploadAsmt> PSupplierUploadAsmts { get; set; }
@@ -307,6 +309,11 @@ public partial class ApplicationDbContext : DbContext
         modelBuilder.Entity<PCustomerUploadFile>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__pCustome__3213E83F42B00016");
+        });
+
+        modelBuilder.Entity<PPoheaderTransfer>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__pPOHeade__3214EC07B22B9ECA");
         });
 
         modelBuilder.Entity<PSupplierAck>(entity =>

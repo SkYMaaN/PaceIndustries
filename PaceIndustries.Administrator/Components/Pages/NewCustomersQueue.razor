@@ -68,7 +68,7 @@
         _passwordPopoverOpen = true;
     }
 
-    private void HandlePasswordCreated()
+    private void HandlePasswordCreated(Pw pw)
     {
         var request = _dbContext.PnContacts.FirstOrDefault(p => p.Id.Equals(_selectedRequest.Id));
 

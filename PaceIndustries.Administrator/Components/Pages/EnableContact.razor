@@ -1,0 +1,113 @@
+﻿@page "/enable-contact"
+
+<PageTitle>Enable Contact</PageTitle>
+
+<PasswordPopover Open="@_passwordPopoverOpen" OpenChanged="@(value => _passwordPopoverOpen = value)" UserEmail="@_selectedRawContact?.Email" OnPasswordCreated ="@HandlePasswordCreated" />
+
+<MudDataGrid Items="@_rawContacts" RowsPerPage="20" Height="88vh" ReadOnly="true" EditMode="@DataGridEditMode.Cell" Groupable="true" Hover="true" Bordered="true" Striped="true" Dense="true">
+    <Columns>
+        <PropertyColumn Property="x => x.ContactId" Title="Id" Hidden />
+        <PropertyColumn Property="x => x.ParentKey" Title="Parent Key" Hidden />
+        <PropertyColumn Property="x => x.Name" Title="Name" />
+        <PropertyColumn Property="x => x.Email" Title="Email" />
+        <PropertyColumn Property="x => x.Company" Title="Company" />
+        <TemplateColumn CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudButton Size="@Size.Small" Variant="@Variant.Filled" Style="@($"background-color:{Colors.Green.Accent3};")" OnClick="@(() => ApproveContact(context.Item))">Approve</MudButton>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+
+    <PagerContent>
+        <MudDataGridPager T="ContactDTO" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    [Inject]
+    private IEmailService _emailService { get; set; }
+
+    [Inject]
+    private IDialogService _dialogService { get; set; }
+
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
+
+    private List<ContactDTO> _rawContacts { get; set; }
+
+    private ContactDTO _selectedRawContact;
+
+    private bool _passwordPopoverOpen;
+
+    protected override void OnInitialized()
+    {
+        _rawContacts = GetRawContacts();
+    }
+
+    /// <summary>
+    /// Load contacts that has no relation in PW table ( not approved contact )
+    /// </summary>
+    private List<ContactDTO> GetRawContacts()
+    {
+        var results = (from contact in _dbContext.Contacts
+                       join pw in _dbContext.Pws
+                       on contact.Email equals pw.Email into contactPWGroup
+                       from pw in contactPWGroup.DefaultIfEmpty()
+                       where pw == null
+                       select contact)
+                       .AsNoTracking()
+                       .Include(c => c.ParentCompany)
+                       .Select(c => new ContactDTO()
+                       {
+                            ContactId = c.Id,
+                            ParentKey = c.ParentKey,
+                            Name = $"{c.FirstName} {c.LastName}",
+                            Email = c.Email,
+                            Company = c.ParentCompany.Name,
+                       })
+                       .ToList();
+
+        return results;
+    }
+
+    private void ApproveContact(ContactDTO contactDTO)
+    {
+        _selectedRawContact = contactDTO;
+
+        _passwordPopoverOpen = true;
+    }
+
+    private void HandlePasswordCreated(Pw pw)
+    {
+        int contactIdx = _rawContacts.IndexOf(_selectedRawContact);
+        _rawContacts.RemoveAt(contactIdx);
+
+        _passwordPopoverOpen = false;
+
+        _dialogService.ShowMessageBox("Contact Approved", "The user's password has been successfully updated. A email containing their updated password has been sent to their email address.", "Ok");
+
+        _emailService.SendPasswordEmailAsync(pw.Email, GetUserNameByEmail(pw.Email), pw.PasswordHash);
+    }
+
+    private string GetUserNameByEmail(string email)
+    {
+        var contact = _dbContext.Contacts.AsNoTracking().FirstOrDefault(c => c.Email.Equals(email));
+
+        string userName = contact != null ? $"{contact.FirstName} {contact.LastName}" : "Dear User";
+
+        return userName;
+    }
+
+    private class ContactDTO
+    {
+        public long ContactId { get; set; }
+
+        public string ParentKey { get; set; } = null!;
+
+        public string? Name { get; set; }
+
+        public string? Email { get; set; }
+
+        public string? Company { get; set; }
+    }
+}

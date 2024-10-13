@@ -2,8 +2,11 @@
 {
     public class PurchaseOrderDetails
     {
+        public long? OdyUniqueId { get; set; }
+
         public int Ponumber { get; set; }
         public DateTime PoDate { get; set; }
+        public string? CompanyId { get; set; }
         public string? PurchAgent { get; set; }
         public string CurrCode { get; set; }
         public string Termcode { get; set; }
