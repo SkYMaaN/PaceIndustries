@@ -67,16 +67,26 @@
         var results = _dbContext.OrderDates.AsNoTracking()
             .Where(o => customerIds.Contains(o.CustomerId) && o.ReleaseDate > DateTime.Now.AddDays(-90))
             .Include(o => o.Product)
+            .Select(p => 
+                new
+                { 
+                    ProductId = p.ProductId, 
+                    ProductDescription = p.Product.Description, 
+                    ReleaseQty = p.ReleaseQty,  
+                    RequestQty = p.RequestQty,
+                    ShipQty = p.ShipQty,
+                })
             .GroupBy(o => o.ProductId)
+            .ToList()
             .Select(g => new ProductSummary()
-            {
-                ProductId = g.Key,
-                Description = g.Any() ? g.First().Product.Description : String.Empty,
-                ReleaseQty = g.Sum(s => s.ReleaseQty),
-                RequestQty = g.Sum(s => s.RequestQty),
-                ShipQty = g.Sum(s => s.ShipQty),
-            })
-            .ToList();
+                {
+                    ProductId = g.Key,
+                    Description = g.First().ProductDescription,
+                    ReleaseQty = g.Sum(s => s.ReleaseQty),
+                    RequestQty = g.Sum(s => s.RequestQty),
+                    ShipQty = g.Sum(s => s.ShipQty),
+                })
+        .ToList();
 
         return results;
     }
