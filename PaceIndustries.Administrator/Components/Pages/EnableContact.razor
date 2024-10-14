@@ -4,10 +4,10 @@
 
 <PasswordPopover Open="@_passwordPopoverOpen" OpenChanged="@(value => _passwordPopoverOpen = value)" UserEmail="@_selectedRawContact?.Email" OnPasswordCreated ="@HandlePasswordCreated" />
 
-<MudDataGrid Items="@_rawContacts" RowsPerPage="20" Height="88vh" ReadOnly="true" EditMode="@DataGridEditMode.Cell" Groupable="true" Hover="true" Bordered="true" Striped="true" Dense="true">
+<MudDataGrid Items="@_rawContacts" Filterable RowsPerPage="20" Height="88vh" ReadOnly="true" EditMode="@DataGridEditMode.Cell" Groupable="true" Hover="true" Bordered="true" Striped="true" Dense="true">
     <Columns>
-        <PropertyColumn Property="x => x.ContactId" Title="Id" Hidden />
-        <PropertyColumn Property="x => x.ParentKey" Title="Parent Key" Hidden />
+        <PropertyColumn Property="x => x.ContactId" Title="Id" Filterable="false" Hidden  />
+        <PropertyColumn Property="x => x.ParentKey" Title="Parent Key" Filterable="false" Hidden />
         <PropertyColumn Property="x => x.Name" Title="Name" />
         <PropertyColumn Property="x => x.Email" Title="Email" />
         <PropertyColumn Property="x => x.Company" Title="Company" />
@@ -50,6 +50,7 @@
     private List<ContactDTO> GetRawContacts()
     {
         var results = (from contact in _dbContext.Contacts
+                       where !contact.Active && !String.IsNullOrEmpty(contact.Email) && !String.IsNullOrEmpty(contact.FirstName) && !String.IsNullOrEmpty(contact.LastName)
                        join pw in _dbContext.Pws
                        on contact.Email equals pw.Email into contactPWGroup
                        from pw in contactPWGroup.DefaultIfEmpty()
