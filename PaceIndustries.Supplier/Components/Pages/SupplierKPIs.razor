@@ -38,7 +38,7 @@
                 <MudPaper Class="pa-4 text-center" Style="margin-top: 20px; background-color: black; opacity: 0.7; color: white;">
                     <MudText Typo="Typo.body2">Target: 0</MudText>
                     <MudText Typo="Typo.h3">0</MudText>
-                    <MudText Typo="Typo.body1">YTD PPM</MudText>
+                    <MudText Typo="Typo.body1">PPM</MudText>
                 </MudPaper>
             </MudItem>
 
@@ -148,13 +148,16 @@
 
         _XAxisLabels = GetXAxisLabels();
 
-        var seriesData = _supplierScoreHistories.Select(s => new ChartSeries() 
-        { 
-            Name = s.Name, 
-            Data = new double[] { s.Score.Value },
-        }).ToList();
+        if (_lastSupplierScoreHistory != null)
+        {
+            var series = new ChartSeries()
+                {
+                    Name = _lastSupplierScoreHistory?.Name,
+                    Data = _supplierScoreHistories.Select(s => s.Score.Value).ToArray(),
+                };
 
-        _series.AddRange(seriesData);
+            _series.Add(series);
+        }
     }
 
     private List<SupplierScoreHistory> LoadScoreHistories()

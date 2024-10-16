@@ -50,7 +50,7 @@
     private List<ContactDTO> GetRawContacts()
     {
         var results = (from contact in _dbContext.Contacts
-                       where !contact.Active && !String.IsNullOrEmpty(contact.Email) && !String.IsNullOrEmpty(contact.FirstName) && !String.IsNullOrEmpty(contact.LastName)
+                       where contact.Active && !String.IsNullOrEmpty(contact.Email) && !String.IsNullOrEmpty(contact.FirstName) && !String.IsNullOrEmpty(contact.LastName)
                        join pw in _dbContext.Pws
                        on contact.Email equals pw.Email into contactPWGroup
                        from pw in contactPWGroup.DefaultIfEmpty()
