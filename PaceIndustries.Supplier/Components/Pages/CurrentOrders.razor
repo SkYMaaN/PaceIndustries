@@ -1,5 +1,5 @@
 ﻿@page "/current-orders"
-@using PaceIndustries.Supplier.Models.PurchaseOrder
+@using PaceIndustries.Shared.Models.PurchaseOrder
 
 @attribute [Authorize]
 
@@ -101,14 +101,14 @@
 </MudDataGrid>
 
 @code {
-        [Inject]
-        private ISnackbar _snackbar { get; set; }
+    [Inject]
+    private ISnackbar _snackbar { get; set; }
 
-        [Inject]
-        private ApplicationDbContext _dbContext { get; set; }
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
 
-        [Inject]
-        private CachedUserData _cachedUserData { get; set; }
+    [Inject]
+    private CachedUserData _cachedUserData { get; set; }
 
     private List<PurchaseOrderDetails> _orders = new();
 

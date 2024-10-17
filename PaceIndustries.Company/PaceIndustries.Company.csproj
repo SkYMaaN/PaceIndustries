@@ -4,15 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>f98fe441-022d-4946-8e68-3c90e859894f</UserSecretsId>
+    <UserSecretsId>62172bcf-3a46-4fc6-93a7-e551b692c3d1</UserSecretsId>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Services\**" />
-    <Content Remove="Services\**" />
-    <EmbeddedResource Remove="Services\**" />
-    <None Remove="Services\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Remove="Properties\serviceDependencies.json" />
@@ -22,6 +15,10 @@
   <ItemGroup>
     <_WebToolingArtifacts Remove="Properties\serviceDependencies.json" />
     <_WebToolingArtifacts Remove="Properties\serviceDependencies.local.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Components\Controls\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
     <PackageReference Include="MudBlazor" Version="7.12.1" />
     <PackageReference Include="MudBlazor.ThemeManager" Version="2.1.0" />
   </ItemGroup>

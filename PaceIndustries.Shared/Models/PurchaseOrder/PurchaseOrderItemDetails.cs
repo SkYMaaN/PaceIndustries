@@ -1,4 +1,4 @@
-﻿namespace PaceIndustries.Supplier.Models.PurchaseOrder
+﻿namespace PaceIndustries.Shared.Models.PurchaseOrder
 {
     public class PurchaseOrderItemDetails
     {

@@ -12,6 +12,7 @@ public partial class ApplicationDbContext : DbContext
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
+        this.Database.SetCommandTimeout(40);
     }
 
     public virtual DbSet<Apopen> Apopens { get; set; }

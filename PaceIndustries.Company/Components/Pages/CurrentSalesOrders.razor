@@ -1,0 +1,102 @@
+﻿@page "/sales-orders"
+
+<PageTitle>Sales Orders</PageTitle>
+
+<MudPaper Style="margin-top: 30px;" Elevation="3">
+    <MudStack Row>
+        <MudToggleIconButton @bind-Toggled="_displayClosedOrders" Icon="@Icons.Material.Filled.LockOpen" Color="Color.Success" ToggledIcon="@Icons.Material.Filled.Lock" ToggledColor="Color.Error" />
+
+        <MudElement Style="margin-top: 15px;">
+            <span style="font-weight: 700;">Mode: </span> @(_displayClosedOrders ? "Closed orders" : "Opened orders")
+        </MudElement>
+
+        @if (_displayClosedOrders)
+        {
+            <MudDatePicker @bind-Date="_startDate" MinDate="@(DateTime.Now.AddYears(-4))" MaxDate="DateTime.Now" PickerVariant="PickerVariant.Dialog" Label="Start date" />
+        }
+
+        <MudSpacer />
+
+        <MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Refresh" Style="background-color: #cc3433; color: white;" OnClick="ReloadClick">Reload</MudButton>
+    </MudStack>
+</MudPaper>
+
+<MudDataGrid Items="@_orders" Virtualize RowsPerPage="20" Height="77vh" Filterable ReadOnly="true" EditMode="@DataGridEditMode.Cell" Groupable="true" Hover="true" Bordered="true" Striped="true" Dense="true" Style="margin-top: 15px;" Elevation="3">
+    <Columns>
+        <PropertyColumn Property="x => x.CompanyId" Title="Company ID" />
+        <PropertyColumn Property="x => x.ProductId" Title="Product ID" Grouping>
+            <GroupTemplate>
+                <span style="font-weight:bold">Orders[@context.Grouping.Count()] : </span> @GetProductInfo(@context.Grouping.Key.ToString())
+            </GroupTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="x => x.CustomerId" Title="Customer ID" />
+        <PropertyColumn Property="x => x.ShipTo" Title="Ship To" />
+        <PropertyColumn Property="x => x.OrderNumber" Title="Order Number" />
+        <PropertyColumn Property="x => x.OrderItem" Title="Order Item" />
+        <PropertyColumn Property="x => x.ReleaseNumber" Title="Release Number" />
+        <PropertyColumn Property="x => x.ReleaseDate" Title="Release Date" CellClass="mud-align-right" Format="dd/MM/yyyy" />
+        <PropertyColumn Property="x => x.ReleaseQty" Title="Release Quantity" />
+        <PropertyColumn Property="x => x.RequestDate" Title="Request Date" CellClass="mud-align-right" Format="dd/MM/yyyy" />
+        <PropertyColumn Property="x => x.RequestQty" Title="Request Quantity" />
+        <PropertyColumn Property="x => x.ShipQty" Title="Ship Quantity" />
+        <PropertyColumn Property="x => x.ReturnQty" Title="Return Quantity" />
+        <PropertyColumn Property="x => x.Complete" Title="Complete" />
+        <PropertyColumn Property="x => x.OdyUniqueId" Title="Unique ID" />
+        <PropertyColumn Property="x => x.UpdateTimeStamp" Title="Update Timestamp" CellClass="mud-align-right" Format="dd/MM/yyyy HH:mm:ss" />
+    </Columns>
+
+    <PagerContent>
+        <MudDataGridPager T="OrderDate" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    [Inject]
+    private ISnackbar _snackbar { get; set; }
+
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
+
+    private List<OrderDate> _orders = new();
+
+    private bool _displayClosedOrders;
+
+    private DateTime? _startDate = DateTime.Now;
+
+    protected override void OnInitialized() => _orders = GetPurchaseOrderDetails();
+
+    private void ReloadClick() => _orders = GetPurchaseOrderDetails();
+
+    private List<OrderDate> GetPurchaseOrderDetails()
+    {
+        var query = _dbContext.OrderDates.AsNoTracking();
+
+        //close orders
+        if(_displayClosedOrders)
+        {
+            query = query.Where(o => o.Complete && _startDate >= o.UpdateTimeStamp);
+        }
+        else //open orders
+        {
+            query = query.Where(o => !o.Complete).Where(o => o.ReleaseDate > DateTime.Now.AddDays(-180));
+        }
+
+        query = query.Include(p => p.Product);
+
+        var results = query.ToList();
+
+        if(!results.Any())
+        {
+            _snackbar.Add("No orders for selected date range.");
+        }
+
+        return results;
+    }
+
+    private string GetProductInfo(string productId)
+    {
+        var product = _orders.FirstOrDefault(p => p.ProductId.Equals(productId))?.Product;
+
+        return product == null ? String.Empty : $"{product.CustPart} {product.Description}";
+    }
+}
