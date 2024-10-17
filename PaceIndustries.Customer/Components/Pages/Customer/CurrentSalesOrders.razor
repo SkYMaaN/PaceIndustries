@@ -9,7 +9,7 @@
         <PropertyColumn Property="x => x.CompanyId" Title="Company ID" />
         <PropertyColumn Property="x => x.ProductId" Title="Product ID" Grouping>
             <GroupTemplate>
-                <span style="font-weight:bold">Orders[@context.Grouping.Count()] : </span> @GetProductInfo(@context.Grouping.Key.ToString())
+                <span style="font-weight:bold">Orders[@context.Grouping.Count()] : </span> @GetProductInfo(@context.Grouping.First())
             </GroupTemplate>
         </PropertyColumn>
         <PropertyColumn Property="x => x.CustomerId" Title="Customer ID" />
@@ -62,9 +62,9 @@
         return results;
     }
 
-    private string GetProductInfo(string productId)
+    private string GetProductInfo(OrderDate orderDate)
     {
-        var product = _orders.FirstOrDefault(p => p.ProductId.Equals(productId))?.Product;
+        var product = orderDate?.Product;
 
         return product == null? String.Empty : $"{product.CustPart} {product.Description}";
     }
