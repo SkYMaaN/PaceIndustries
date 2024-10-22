@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.SemanticKernel;
 using MudBlazor.Services;
 using PaceIndustries.Company.Components;
 using PaceIndustries.Shared.Data;
@@ -24,6 +25,8 @@ namespace PaceIndustries.Company
                 options.UseSqlServer(connectionString);
             });
 
+            ConfigureSemanticKernel(builder.Services, builder.Configuration);
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -43,6 +46,17 @@ namespace PaceIndustries.Company
                 .AddInteractiveServerRenderMode();
 
             app.Run();
+        }
+
+        private static void ConfigureSemanticKernel(IServiceCollection services, IConfiguration configuration)
+        {
+            string name = configuration["AzureOpenAi:Name"];
+
+            string endpoint = configuration["AzureOpenAi:Endpoint"];
+
+            string apiKey = configuration["AzureOpenAi:Key1"];
+
+            services.AddKernel().AddAzureOpenAIChatCompletion(name, endpoint, apiKey);
         }
     }
 }

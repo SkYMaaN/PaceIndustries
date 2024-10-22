@@ -1,0 +1,215 @@
+﻿@page "/pace-ai"
+
+@using Microsoft.SemanticKernel
+@using Microsoft.SemanticKernel.ChatCompletion
+@using Microsoft.SemanticKernel.Connectors.OpenAI
+@using Microsoft.Data.SqlClient
+@using System.Text
+
+<PageTitle>Pace AI</PageTitle>
+
+<MudElement Class="m-2 rounded-2">
+    <MudPaper Height="80vh" MaxHeight="80vh" Elevation="3">
+        @if (_isGenerating)
+        {
+            <MudProgressLinear Style="background-color: #cc3433; color: white;" Indeterminate="true" Size="Size.Medium" />
+        }
+
+        @foreach (ChatMessageContent message in _chatHistory)
+        {
+            bool isUser = message.Role.Equals(AuthorRole.User);
+
+            <MudCard Class="m-2">
+                <MudCardContent>
+                    <MudText Style="font-size: 12px; margin-bottom: 5px;" Align="@(isUser ? Align.Right : Align.Left)">@(isUser ? "You" : "Pace AI")</MudText>
+
+                    <MudText Typo="Typo.body1" Align="@(isUser ? Align.Right : Align.Left)" Color="@GetMessageColor(message.Role)">@((MarkupString)message.Content)</MudText>
+                </MudCardContent>
+            </MudCard>
+        }
+    </MudPaper>
+
+
+    <MudGrid>
+        <MudItem xs="11">
+            <MudTextField @bind-Value="_message" Disabled="_isGenerating" Immediate Label="Ask me something" Variant="Variant.Outlined" OnKeyDown="@(async (e) => { if (e.Code == "Enter") await SendMessage(); })" />
+        </MudItem>
+        <MudItem xs="1">
+            <MudButton FullWidth EndIcon="@Icons.Material.Filled.Send" Disabled="_isGenerating" Size="Size.Large" Style="background-color: #cc3433; color: white; margin-top: 13px;" Variant="Variant.Filled" OnClick="SendMessage">Send</MudButton>
+        </MudItem>
+    </MudGrid>
+
+</MudElement>
+
+@code {
+    [Inject]
+    private Kernel _kernel { get; set; }
+
+    [Inject]
+    private IChatCompletionService _chatCompletionService { get; set; }
+
+    [Inject]
+    private ApplicationDbContext _dbContext { get; set; }
+
+    private SqlConnection _sqlConnection;
+
+    private bool _isGenerating;
+
+    private OpenAIPromptExecutionSettings _openAIPromptExecutionSettings = new()
+        {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            ChatSystemPrompt = $"{SemanticKernelPromts.DbSchema} \n {SemanticKernelPromts.LLMPrompt}",
+        };
+
+    private ChatHistory _chatHistory { get; set; } = new();
+
+    private string _message;
+
+    protected override void OnParametersSet()
+    {
+        _sqlConnection = new SqlConnection(_dbContext.Database.GetConnectionString());
+    }
+
+    private async Task SendMessage()
+    {
+        if (String.IsNullOrEmpty(_message))
+        {
+            _chatHistory.AddMessage(AuthorRole.System, $"Empty message. Please, provide your question.");
+            return;
+        }
+
+        try
+        {
+            _chatHistory.AddUserMessage(_message);
+
+            _isGenerating = true;
+
+            ChatMessageContent aiResponse = await _chatCompletionService.GetChatMessageContentAsync(chatHistory: _chatHistory, executionSettings: _openAIPromptExecutionSettings, kernel: _kernel);
+
+            var data = GetData(aiResponse.Content);
+
+            _chatHistory.AddMessage(aiResponse.Role, data ?? String.Empty);
+
+            _message = String.Empty;
+        }
+        catch (SqlException sqlEx)
+        {
+            _chatHistory.AddMessage(AuthorRole.System, $"Failed to convert the NL to T-SQL query. Try rephrasing or clarifying your request.");
+        }
+        catch (Exception ex)
+        {
+            _chatHistory.AddMessage(AuthorRole.System, $"Undefined error: {ex.Message}");
+        }
+        finally
+        {
+            _isGenerating = false;
+        }
+    }
+
+    /// <summary>
+    /// Use raw SQL query to get data from SQL server. Then wraps data to html table.
+    /// </summary>
+    private string GetData(string query)
+    {
+        int columnsCount = 0;
+        var values = new List<string>();
+
+        if (_sqlConnection != null && _sqlConnection.State != System.Data.ConnectionState.Open)
+        {
+            _sqlConnection.Open();
+        }
+
+        SqlCommand command = _sqlConnection.CreateCommand();
+        command.CommandTimeout = 40;
+        command.CommandText = query;
+
+        using (SqlDataReader dataReader = command.ExecuteReader())
+        {
+            if (dataReader.HasRows)
+            {
+                //columns
+                columnsCount = dataReader.FieldCount;
+                values.AddRange(Enumerable.Range(0, columnsCount).Select(dataReader.GetName));
+
+                while (dataReader.Read())
+                {
+                    var rowValues = new List<string>();
+
+                    for (int i = 0; i < columnsCount; i++)
+                    {
+                        rowValues.Add(dataReader.GetValue(i).ToString());
+                    }
+
+                    values.AddRange(rowValues);
+                }
+            }
+        }
+
+        var table = GenerateTable(values, columnsCount);
+        return table;
+    }
+
+    private string GenerateTable(List<string> data, int columnsCount)
+    {
+        StringBuilder tableBuilder = new StringBuilder();
+
+        tableBuilder.Append("<div class='table-responsive'>");
+
+        tableBuilder.Append("<table class='table table-striped table-bordered'>");
+
+        tableBuilder.Append("<thead><tr>");
+        for (int i = 0; i < columnsCount; i++)
+        {
+            tableBuilder.Append($"<th>{data[i]}</th>");
+        }
+        tableBuilder.Append("</tr></thead>");
+
+        tableBuilder.Append("<tbody>");
+        for (int i = columnsCount; i < data.Count; i += columnsCount)
+        {
+            tableBuilder.Append("<tr>");
+            for (int j = 0; j < columnsCount; j++)
+            {
+                if (i + j < data.Count)
+                {
+                    tableBuilder.Append($"<td>{data[i + j]}</td>");
+                }
+                else
+                {
+                    tableBuilder.Append("<td></td>");
+                }
+            }
+            tableBuilder.Append("</tr>");
+        }
+        tableBuilder.Append("</tbody>");
+
+        tableBuilder.Append("</table>");
+        tableBuilder.Append("</div>");
+
+        return tableBuilder.ToString();
+    }
+
+    private Color GetMessageColor(AuthorRole role)
+    {
+        Color color = Color.Default;
+
+        if (role == AuthorRole.User)
+        {
+            color = Color.Primary;
+        }
+        else if (role == AuthorRole.Assistant)
+        {
+            color = Color.Success;
+        }
+        else if (role == AuthorRole.System)
+        {
+            color = Color.Error;
+        }
+        else if (role == AuthorRole.Tool)
+        {
+            color = Color.Info;
+        }
+
+        return color;
+    }
+}
