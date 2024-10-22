@@ -61,7 +61,7 @@
             ChatSystemPrompt = $"{SemanticKernelPromts.DbSchema} \n {SemanticKernelPromts.LLMPrompt}",
         };
 
-    private List<string> _forbiddenSqlStatements = new List<string>() { "SELECT", "UPDATE", "ALTER", "DROP", "DELETE", "TRUNCATE" };
+    private List<string> _forbiddenSqlStatements = new List<string>() { "UPDATE", "ALTER", "DROP", "DELETE", "TRUNCATE" };
 
     private ChatHistory _chatHistory { get; set; } = new();
 
