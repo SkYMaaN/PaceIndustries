@@ -8,6 +8,7 @@
         Use only accurate and existing field and table names from the database structure.
         The response should consist of a raw SQL query, without formatting ```sql and other characters.
 		Each new response should be based only on database structure.
+		You are strictly prohibited from generating any requests to insert, create, add, update, or delete data! You may only generate read requests!
         ";
 
 		public const string DbSchema = @"/****** Object:  Table [dbo].[APOpen]    Script Date: 21.10.2024 19:46:15 ******/

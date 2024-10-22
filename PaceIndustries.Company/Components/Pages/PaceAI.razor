@@ -61,6 +61,8 @@
             ChatSystemPrompt = $"{SemanticKernelPromts.DbSchema} \n {SemanticKernelPromts.LLMPrompt}",
         };
 
+    private List<string> _forbiddenSqlStatements = new List<string>() { "SELECT", "UPDATE", "ALTER", "DROP", "DELETE", "TRUNCATE" };
+
     private ChatHistory _chatHistory { get; set; } = new();
 
     private string _message;
@@ -111,6 +113,11 @@
     /// </summary>
     private string GetData(string query)
     {
+        if(_forbiddenSqlStatements.Any(statement => query.Contains(statement, StringComparison.InvariantCultureIgnoreCase)))
+        {
+            throw new Exception($"The query contains a forbidden SQL statement. Only read operations are allowed!");
+        }
+
         int columnsCount = 0;
         var values = new List<string>();
 
