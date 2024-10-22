@@ -158,10 +158,10 @@
         /// </summary>
         [Required(ErrorMessage = "Username is required.")]
         [EmailAddress(ErrorMessage = "The username must be a valid email address.")]
-        public string Email { get; set; } = "kelly.goode@acuitybrands.com";
+        public string Email { get; set; } // = "kelly.goode@acuitybrands.com";
 
         [Required(ErrorMessage = "Password is required.")]
         [StringLength(20, MinimumLength = 6, ErrorMessage = "Password must be between 6 and 20 characters.")]
-        public string Password { get; set; } = "password1";
+        public string Password { get; set; } // = "password1";
     }
 }

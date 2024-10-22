@@ -124,27 +124,27 @@
     private class CustomerModel
     {
         [Required(ErrorMessage = "Customer Name is required")]
-        public string CustomerName { get; set; } = "Arnold Achwarzenegger";
+        public string CustomerName { get; set; }// = "Arnold Achwarzenegger";
 
         [Required(ErrorMessage = "Customer website is required")]
-        public string CustomerWebsite { get; set; } = "https://www.youtube.com/";
+        public string CustomerWebsite { get; set; }// = "https://www.youtube.com/";
 
         [Required(ErrorMessage = "Customer location is required")]
-        public string CustomerLocation { get; set; } = "Germany";
+        public string CustomerLocation { get; set; }// = "Germany";
 
         [Required(ErrorMessage = "First Name is required")]
-        public string FirstName { get; set; } = "Arnold";
+        public string FirstName { get; set; }// = "Arnold";
 
         [Required(ErrorMessage = "Last Name is required")]
-        public string LastName { get; set; } = "Achwarzenegger";
+        public string LastName { get; set; }// = "Achwarzenegger";
 
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email address")]
-        public string Email { get; set; } = "arny123@gmail.com";
+        public string Email { get; set; }// = "arny123@gmail.com";
 
         [Required(ErrorMessage = "Phone Number is required")]
         [IsPhoneNumberAttribute(ErrorMessage = "Invalid phone number")]
-        public string PhoneNumber { get; set; } = "380734281593";
+        public string PhoneNumber { get; set; }// = "380734281593";
 
         [LeadSourceRequired]
         public LeadSource LeadSource { get; set; } = LeadSource.Web;
