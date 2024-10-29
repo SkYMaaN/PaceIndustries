@@ -9,7 +9,7 @@
 <PageTitle>Pace AI</PageTitle>
 
 <MudElement Class="m-2 rounded-2">
-    <MudPaper Height="80vh" MaxHeight="80vh" Elevation="3">
+    <MudPaper Height="80vh" MaxHeight="80vh" Elevation="3" Style="overflow-y: auto; background-color: lightgray;">
         @if (_isGenerating)
         {
             <MudProgressLinear Style="background-color: #cc3433; color: white;" Indeterminate="true" Size="Size.Medium" />
@@ -31,14 +31,16 @@
 
 
     <MudGrid>
-        <MudItem xs="11">
+        <MudItem xs="10">
             <MudTextField @bind-Value="_message" Disabled="_isGenerating" Immediate Label="Ask me something" Variant="Variant.Outlined" OnKeyDown="@(async (e) => { if (e.Code == "Enter") await SendMessage(); })" />
         </MudItem>
-        <MudItem xs="1">
-            <MudButton FullWidth EndIcon="@Icons.Material.Filled.Send" Disabled="_isGenerating" Size="Size.Large" Style="background-color: #cc3433; color: white; margin-top: 13px;" Variant="Variant.Filled" OnClick="SendMessage">Send</MudButton>
+        <MudItem xs="2">
+            <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled" Style="margin-top: 13px;" Size="Size.Large">
+                <MudButton EndIcon="@Icons.Material.Filled.Send" Disabled="_isGenerating" Style="background-color: #cc3433; color: white;" OnClick="SendMessage">Send</MudButton>
+                <MudButton EndIcon="@Icons.Material.Filled.Clear" Disabled="_isGenerating" Style="background-color: #cc3433; color: white;" OnClick="@(() => _chatHistory.Clear())">Clear</MudButton>
+            </MudButtonGroup>
         </MudItem>
     </MudGrid>
-
 </MudElement>
 
 @code {
@@ -55,13 +57,9 @@
 
     private bool _isGenerating;
 
-    private OpenAIPromptExecutionSettings _openAIPromptExecutionSettings = new()
-        {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
-            ChatSystemPrompt = $"{SemanticKernelPromts.DbSchema} \n {SemanticKernelPromts.LLMPrompt}",
-        };
+    private OpenAIPromptExecutionSettings _openAIPromptExecutionSettings;
 
-    private List<string> _forbiddenSqlStatements = new List<string>() { "CREATE", "ADD", "UPDATE", "ALTER", "DROP", "DELETE", "TRUNCATE" };
+    private List<string> _forbiddenSqlStatements = new List<string>() { " CREATE ", " ADD ", " UPDATE ", " ALTER ", " DROP ", " DELETE ", " TRUNCATE " };
 
     private ChatHistory _chatHistory { get; set; } = new();
 
@@ -70,6 +68,12 @@
     protected override void OnParametersSet()
     {
         _sqlConnection = new SqlConnection(_dbContext.Database.GetConnectionString());
+
+        _openAIPromptExecutionSettings = new()
+            {
+                ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+                ChatSystemPrompt = GetAiPromts(),
+            };
     }
 
     private async Task SendMessage()
@@ -82,11 +86,17 @@
 
         try
         {
-            _chatHistory.AddUserMessage(_message);
-
             _isGenerating = true;
 
-            ChatMessageContent aiResponse = await _chatCompletionService.GetChatMessageContentAsync(chatHistory: _chatHistory, executionSettings: _openAIPromptExecutionSettings, kernel: _kernel);
+            _chatHistory.AddUserMessage(_message);
+
+            //Used to not provide real chat history to the AI
+            var tempChatHistory = new ChatHistory();
+            tempChatHistory.AddUserMessage(_message);
+
+            ChatMessageContent aiResponse = await _chatCompletionService.GetChatMessageContentAsync(chatHistory: tempChatHistory, executionSettings: _openAIPromptExecutionSettings, kernel: _kernel);
+
+            string queryy = aiResponse.Content;
 
             var data = GetData(aiResponse.Content);
 
@@ -218,5 +228,29 @@
         }
 
         return color;
+    }
+
+    private string GetAiPromts()
+    {
+        var stringBuilder = new StringBuilder();
+
+        stringBuilder.AppendLine(SemanticKernelPromts.DbSchema);
+        stringBuilder.AppendLine();
+        stringBuilder.AppendLine(SemanticKernelPromts.LLMPrompt);
+        stringBuilder.AppendLine();
+
+        foreach (string customPromt in SemanticKernelPromts.CustomPromts)
+        {
+            if (String.IsNullOrEmpty(customPromt))
+            {
+                continue;
+            }
+
+            stringBuilder.AppendLine();
+            stringBuilder.AppendLine(customPromt);
+        }
+
+        string promts = stringBuilder.ToString();
+        return promts;
     }
 }
