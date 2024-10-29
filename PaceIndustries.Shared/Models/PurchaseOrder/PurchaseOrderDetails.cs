@@ -2,7 +2,7 @@
 {
     public class PurchaseOrderDetails
     {
-        public long? OdyUniqueId { get; set; }
+        public int OdyUniqueId { get; set; }
 
         public int Ponumber { get; set; }
         public DateTime PoDate { get; set; }

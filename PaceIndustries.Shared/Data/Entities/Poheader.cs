@@ -46,7 +46,7 @@ public partial class Poheader
     public string Ackstatus { get; set; } = null!;
 
     [Key]
-    public long OdyUniqueId { get; set; }
+    public int OdyUniqueId { get; set; }
 
     [Column(TypeName = "datetime")]
     public DateTime UpdateTimeStamp { get; set; }
