@@ -1,8 +1,8 @@
-﻿namespace PaceIndustries.Company
+﻿namespace PaceIndustries.Circuit
 {
-	public static class SemanticKernelPromts
-	{
-		public const string LLMPrompt = @"
+    public static class SemanticKernelPromts
+    {
+        public const string LLMPrompt = @"
         Check the SQL database structure.
         You have to convert a natural language query into a T-SQL query based on database structure.
         Use only accurate and existing field and table names from the database structure.
@@ -11,7 +11,7 @@
 		You are strictly prohibited from generating any requests to insert, create, add, update, or delete data! You may only generate read requests!
         ";
 
-		public const string DbSchema = @"/****** Object:  Table [dbo].[APOpen]    Script Date: 21.10.2024 19:46:15 ******/
+        public const string DbSchema = @"/****** Object:  Table [dbo].[APOpen]    Script Date: 21.10.2024 19:46:15 ******/
 			SET ANSI_NULLS ON
 			GO
 			SET QUOTED_IDENTIFIER ON
@@ -2073,9 +2073,9 @@
 			GO
 			";
 
-		public static List<string> CustomPromts = new List<string>()
-		{
-			"",
-		};
-	}
+        public static List<string> CustomPromts = new List<string>()
+        {
+            "",
+        };
+    }
 }
